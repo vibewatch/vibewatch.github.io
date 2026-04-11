@@ -1,0 +1,57 @@
+site_name: Harvester Intelligence
+site_description: Daily AI signal intelligence harvested from Reddit and Twitter
+
+theme:
+  name: material
+  font: false
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - toc.follow
+    - content.tooltips
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+
+nav:
+  - Intelligence: index.md
+  - Reddit:
+    - AI Agents:
+      - 'Apr 7': reddit/ai-agent/2026-04-07.md
+      - 'Apr 8': reddit/ai-agent/2026-04-08.md
+      - 'Apr 9': reddit/ai-agent/2026-04-09.md
+  - Twitter:
+    - AI Agents:
+      - 'Apr 7': twitter/ai-agent/2026-04-07.md

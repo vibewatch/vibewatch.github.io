@@ -1,0 +1,11 @@
+[project]
+name = "website"
+version = "0.1.0"
+description = "Social signals daily"
+requires-python = ">=3.12"
+dependencies = [
+    "mkdocs-material",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = []
