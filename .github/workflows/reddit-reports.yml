@@ -1,4 +1,4 @@
-name: Build reports
+name: Build reddit reports
 
 on:
   workflow_dispatch:
@@ -30,13 +30,13 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate trend reports for all Reddit JSON files lacking corresponding markdown files, where the filenames (in yyyy-MM-dd format) indicate dates earlier than today. Analyze them sequentially — one file at a time." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Generate trend reports for all Reddit JSON files lacking corresponding markdown files, where the filenames (in yyyy-MM-dd format) indicate dates earlier than today. Only process files under data/reddit/. Analyze them sequentially — one file at a time." --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Check for new reports
         id: check-reports
         working-directory: harvester
         run: |
-          if [ -n "$(git status --porcelain reports/ | grep '\.md$')" ]; then
+          if [ -n "$(git status --porcelain reports/reddit/ | grep '\.md$')" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -48,8 +48,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'reports/**/*.md'
-          git commit -m "Add reports for $(date -u +%Y-%m-%d)"
+          git add 'reports/reddit/**/*.md'
+          git commit -m "Add reddit reports for $(date -u +%Y-%m-%d)"
           git pull --rebase
           git push
 
@@ -63,7 +63,7 @@ jobs:
       - name: Copy reports to docs
         if: steps.check-reports.outputs.has_changes == 'true'
         run: |
-          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/ website/docs/
+          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/reddit/ website/docs/reddit/
 
       - name: Push website changes
         if: steps.check-reports.outputs.has_changes == 'true'
@@ -71,11 +71,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
+          git add docs/reddit/
           if git diff --cached --quiet; then
             echo "No new docs to push"
           else
-            git commit -m "Update reports for $(date -u +%Y-%m-%d)"
+            git commit -m "Update reddit reports for $(date -u +%Y-%m-%d)"
             git pull --rebase
             git push
           fi

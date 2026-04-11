@@ -1,0 +1,81 @@
+name: Build twitter reports
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  build-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout harvester
+        uses: actions/checkout@v6
+        with:
+          repository: huangyingting/harvester
+          token: ${{ secrets.HARVESTER_PAT }}
+          path: harvester
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Run Copilot CLI
+        working-directory: harvester
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+        run: |
+          copilot -p "Generate trend reports for all Twitter JSON files lacking corresponding markdown files, where the filenames (in yyyy-MM-dd format) indicate dates earlier than today. Only process files under data/twitter/. Analyze them sequentially — one file at a time." --model claude-opus-4.6 --yolo --no-ask-user
+
+      - name: Check for new reports
+        id: check-reports
+        working-directory: harvester
+        run: |
+          if [ -n "$(git status --porcelain reports/twitter/ | grep '\.md$')" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push harvester changes
+        if: steps.check-reports.outputs.has_changes == 'true'
+        working-directory: harvester
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add 'reports/twitter/**/*.md'
+          git commit -m "Add twitter reports for $(date -u +%Y-%m-%d)"
+          git pull --rebase
+          git push
+
+      - name: Checkout website
+        if: steps.check-reports.outputs.has_changes == 'true'
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.WEBSITE_PAT }}
+          path: website
+
+      - name: Copy reports to docs
+        if: steps.check-reports.outputs.has_changes == 'true'
+        run: |
+          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/twitter/ website/docs/twitter/
+
+      - name: Push website changes
+        if: steps.check-reports.outputs.has_changes == 'true'
+        working-directory: website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/twitter/
+          if git diff --cached --quiet; then
+            echo "No new docs to push"
+          else
+            git commit -m "Update twitter reports for $(date -u +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi
