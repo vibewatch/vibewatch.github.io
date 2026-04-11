@@ -1,5 +1,5 @@
-site_name: Harvester Intelligence
-site_description: Daily AI signal intelligence harvested from Reddit and Twitter
+site_name: Daily Social Signals
+site_description: Daily social signals — surfacing themes, pain points, and more from the social web.
 
 theme:
   name: material
@@ -45,13 +45,10 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
 
-nav:
-  - Intelligence: index.md
-  - Reddit:
-    - AI Agents:
-      - 'Apr 7': reddit/ai-agent/2026-04-07.md
-      - 'Apr 8': reddit/ai-agent/2026-04-08.md
-      - 'Apr 9': reddit/ai-agent/2026-04-09.md
-  - Twitter:
-    - AI Agents:
-      - 'Apr 7': twitter/ai-agent/2026-04-07.md
+plugins:
+  - search
+  - awesome-pages
+  - macros
+
+hooks:
+  - hooks/title.py

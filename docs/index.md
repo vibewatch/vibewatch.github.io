@@ -3,10 +3,10 @@ hide:
   - toc
 ---
 
-# Harvester Intelligence
+# Daily Social Signals
 
 <div class="hero-tagline">
-Daily signal intelligence from the AI builder frontier — surfacing themes, pain points, and emerging tool activity across Reddit and Twitter.
+Daily social signals — surfacing themes, pain points, and emerging tool activity across Reddit and Twitter.
 </div>
 
 ---
@@ -21,9 +21,7 @@ Daily signal intelligence from the AI builder frontier — surfacing themes, pai
 
     Community pulse from r/AI_Agents, r/aiagents, and r/AgentsOfAI — ranked by engagement score, grouped into themes with pain point and opportunity annotations.
 
-    [Apr 9 →](reddit/ai-agent/2026-04-09.md){ .md-button .md-button--primary }
-    [Apr 8 →](reddit/ai-agent/2026-04-08.md){ .md-button }
-    [Apr 7 →](reddit/ai-agent/2026-04-07.md){ .md-button }
+    {% for r in list_reports("reddit", "ai-agent", 7) %}[{{ r.label }} →]({{ r.path }}){ .md-button{% if loop.first %} .md-button--primary{% endif %} } {% endfor %}
 
 -   :fontawesome-brands-x-twitter: **Twitter · AI Agents**
 
@@ -31,7 +29,7 @@ Daily signal intelligence from the AI builder frontier — surfacing themes, pai
 
     Builder and researcher signals from curated Twitter searches — scored by engagement with reply-chain context included for top posts.
 
-    [Apr 7 →](twitter/ai-agent/2026-04-07.md){ .md-button .md-button--primary }
+    {% for r in list_reports("twitter", "ai-agent", 7) %}[{{ r.label }} →]({{ r.path }}){ .md-button{% if loop.first %} .md-button--primary{% endif %} } {% endfor %}
 
 </div>
 
@@ -43,7 +41,7 @@ Harvester runs automated monitors that collect posts from configured subreddits 
 
 | Source | Topic | Reports |
 |---|---|---|
-| Reddit | AI Agents | Apr 7, Apr 8, Apr 9 |
-| Twitter | AI Agents | Apr 7 |
+| Reddit | AI Agents | {% for r in list_reports("reddit", "ai-agent") %}{{ r.label }}{% if not loop.last %}, {% endif %}{% endfor %} |
+| Twitter | AI Agents | {% for r in list_reports("twitter", "ai-agent") %}{{ r.label }}{% if not loop.last %}, {% endif %}{% endfor %} |
 
 Reports are generated from `data/<source>/<topic>/<date>.json` snapshots collected automatically by the configured monitors.
