@@ -2,8 +2,8 @@ name: Build reports
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 2 * * *'
+  schedule:
+    - cron: '0 2 * * *'
 
 permissions:
   contents: write
@@ -28,9 +28,9 @@ jobs:
       - name: Run Copilot CLI
         working-directory: harvester
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.HARVESTER_PAT }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "TODO: replace with your prompt" --allow-tool='shell(*)' --allow-tool=write --no-ask-user
+          copilot -p "Analyze reddit ai agent posts at 2026-04-08" --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Check for new reports
         id: check-reports
