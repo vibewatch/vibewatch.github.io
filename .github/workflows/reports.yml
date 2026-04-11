@@ -1,0 +1,79 @@
+name: Build reports
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 2 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  build-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout harvester
+        uses: actions/checkout@v6
+        with:
+          repository: huangyingting/harvester
+          token: ${{ secrets.GH_PAT }}
+          path: harvester
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Run Copilot CLI
+        working-directory: harvester
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          copilot -p "TODO: replace with your prompt" --allow-tool='shell(*)' --allow-tool=write --no-ask-user
+
+      - name: Check for new reports
+        id: check-reports
+        working-directory: harvester
+        run: |
+          if [ -n "$(git status --porcelain reports/ | grep '\.md$')" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push harvester changes
+        if: steps.check-reports.outputs.has_changes == 'true'
+        working-directory: harvester
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add 'reports/**/*.md'
+          git commit -m "Add reports for $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Checkout website
+        if: steps.check-reports.outputs.has_changes == 'true'
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_PAT }}
+          path: website
+
+      - name: Copy reports to docs
+        if: steps.check-reports.outputs.has_changes == 'true'
+        run: |
+          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/ website/docs/
+
+      - name: Push website changes
+        if: steps.check-reports.outputs.has_changes == 'true'
+        working-directory: website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "No new docs to push"
+          else
+            git commit -m "Update reports for $(date -u +%Y-%m-%d)"
+            git push
+          fi
