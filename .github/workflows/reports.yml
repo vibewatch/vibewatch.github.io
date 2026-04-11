@@ -30,7 +30,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Analyze reddit ai agent posts at 2026-04-08" --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Generate trend reports for all Reddit JSON files lacking corresponding markdown files, where the filenames (in yyyy-MM-dd format) indicate dates earlier than today. Analyze them sequentially — one file at a time." --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Check for new reports
         id: check-reports
