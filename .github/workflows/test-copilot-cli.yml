@@ -15,6 +15,6 @@ jobs:
 
       - name: Test Copilot CLI
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.HARVESTER_PAT }}
         run: |
-          copilot -p "Say hello and confirm you are working." --no-ask-user
+          copilot -p "Say hello and confirm you are working." --model claude-opus-4.6 --yolo
