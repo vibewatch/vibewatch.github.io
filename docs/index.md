@@ -15,26 +15,16 @@ Social media signal briefings — themes, pain points, and emerging topics from 
 
 <div class="grid cards" markdown>
 
--   :material-reddit: **Reddit · AI Agents**
+{% for t in list_all_topics(3) %}
+-   {{ t.source_icon }} **{{ t.source_label }} · {{ t.topic_label }}**
 
     ---
 
-    Daily briefings from popular AI Agent subreddits — key themes, pain points, and emerging topics.
+    {{ t.description }}
 
-    {% for r in list_reports("reddit", "ai-agent", 7) %}[{{ r.label }} →]({{ r.path }}){ .md-button{% if loop.first %} .md-button--primary{% endif %} } {% endfor %}
+    {% for r in t.reports %}[{{ r.label }} →]({{ r.path }}){ .md-button{% if loop.first %} .md-button--primary{% endif %} } {% endfor %}
 
--   :fontawesome-brands-x-twitter: **Twitter · AI Agents**
+    [View all →]({{ t.source }}/{{ t.topic }}/index.md){ .md-button }
 
-    ---
-
-    Daily briefings from AI Agent discussions on Twitter — key themes, signals, and emerging topics.
-
-    {% for r in list_reports("twitter", "ai-agent", 7) %}[{{ r.label }} →]({{ r.path }}){ .md-button{% if loop.first %} .md-button--primary{% endif %} } {% endfor %}
-
+{% endfor %}
 </div>
-
----
-
-## About
-
-Daily social media trend and signal analysis briefings — surfacing themes, pain points, unmet needs, and emerging topics from Reddit and Twitter. For educational purposes only.

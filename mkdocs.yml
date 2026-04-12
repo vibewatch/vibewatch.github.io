@@ -23,6 +23,7 @@ theme:
   features:
     - navigation.tabs
     - navigation.sections
+    - navigation.indexes
     - navigation.top
     - navigation.instant
     - search.suggest
@@ -50,6 +51,19 @@ plugins:
   - search
   - awesome-pages
   - macros
+
+extra:
+  sources:
+    reddit:
+      label: Reddit
+      icon: ":material-reddit:"
+    twitter:
+      label: Twitter
+      icon: ":fontawesome-brands-x-twitter:"
+  topics:
+    ai-agent:
+      label: AI Agents
+      description: Key themes, pain points, and emerging topics.
 
 hooks:
   - hooks/title.py
