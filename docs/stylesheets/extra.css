@@ -650,48 +650,65 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 }
 
 /* ============================================================
-   REPORT CALENDAR — Monthly grid view (compact)
+   REPORT CALENDAR — Monthly grid view (refined)
    ============================================================ */
 
 .report-calendar-wrap {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 2rem;
   align-items: start;
 }
 
 .report-calendar {
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--md-accent-fg-color);
-  border-radius: 10px;
-  padding: 0.8rem 1rem 0.6rem;
+  border-radius: 12px;
+  padding: 1.4rem 1.6rem 1.2rem;
+  background: var(--md-default-bg-color--light);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  box-shadow: 0px 0px 0px 1px var(--md-default-fg-color--lightest);
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.report-calendar:hover {
+  border-color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+  box-shadow:
+    0px 0px 0px 1px var(--md-accent-fg-color),
+    rgba(0, 0, 0, 0.05) 0px 4px 24px;
+}
+
+[data-md-color-scheme="slate"] .report-calendar {
+  border-color: rgba(176, 174, 165, 0.1);
+  box-shadow: 0px 0px 0px 1px rgba(176, 174, 165, 0.1);
 }
 
 .report-calendar__title {
   font-family: var(--serif);
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin-bottom: 0.3rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
   color: var(--md-default-fg-color);
   text-align: center;
+  letter-spacing: -0.01em;
 }
 
 .report-calendar__grid {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 2px;
+  border-spacing: 4px;
   table-layout: fixed;
 }
 
 .report-calendar__grid th {
   font-family: var(--sans);
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--md-default-fg-color--lighter);
-  padding: 0.2rem 0;
+  padding: 0.35rem 0;
   text-align: center;
   background: none;
   border: none;
@@ -701,13 +718,15 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   text-align: center;
   padding: 0;
   border: none;
-  border-radius: 6px;
-  width: 2rem;
-  height: 2rem;
+  border-radius: 10px;
+  width: 2.4rem;
+  height: 2.4rem;
   vertical-align: middle;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
   color: var(--md-default-fg-color--light);
   background: none;
+  transition: background 0.15s ease;
 }
 
 .report-calendar__grid td:hover {
@@ -718,23 +737,26 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   background: none !important;
 }
 
+/* ── Active day (has report) ── */
+
 .report-calendar__day--has-report {
-  background: var(--md-accent-fg-color--transparent) !important;
-  font-weight: 600;
-  color: var(--md-accent-fg-color) !important;
-  border: 1px solid var(--md-accent-fg-color) !important;
+  background: var(--md-accent-fg-color) !important;
+  font-weight: 700;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: transform 0.18s ease, background 0.18s ease;
 }
 
 .report-calendar__day--has-report:hover {
-  background: var(--md-accent-fg-color) !important;
-  color: var(--ivory) !important;
-  transform: scale(1.1);
+  background: var(--coral) !important;
+  color: #fff !important;
+  transform: scale(1.15);
 }
 
 [data-md-color-scheme="slate"] .report-calendar__day--has-report:hover {
-  color: var(--deep-dark) !important;
+  color: #fff !important;
 }
 
 .report-calendar__day--has-report a {
