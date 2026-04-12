@@ -103,7 +103,7 @@ def define_env(env):
         # Sort months descending (newest first)
         sorted_months = sorted(months.keys(), reverse=True)
 
-        html_parts = []
+        html_parts = ['<div class="report-calendar-wrap">']
         for year, month in sorted_months:
             month_name = calendar.month_name[month]
             cal = calendar.Calendar(firstweekday=6)  # Sunday first
@@ -140,4 +140,5 @@ def define_env(env):
 
             html_parts.append("</tbody></table></div>")
 
+        html_parts.append("</div>")
         return "\n".join(html_parts)
