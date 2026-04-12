@@ -74,10 +74,14 @@ html { font-size: 106.25%; }
   }
 }
 
-.md-typeset .md-typeset__scrollwrap,
-.md-typeset table:not([class]) {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.md-typeset .md-typeset__scrollwrap {
+  overflow-x: hidden;
+}
+
+.md-typeset .md-typeset__scrollwrap > div {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 /* ============================================================
@@ -335,14 +339,15 @@ html { font-size: 106.25%; }
 }
 
 /* ============================================================
-   TABLES — Warm containment
+   TABLES — Truncate + expand-on-hover
    ============================================================ */
 
 .md-typeset table:not([class]) {
+  display: table !important;
   border-collapse: collapse;
-  font-size: 0.9rem;
-  width: max-content;
-  min-width: 100%;
+  font-size: 0.78rem;
+  width: 100% !important;
+  table-layout: fixed !important;
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 8px;
 }
@@ -350,20 +355,33 @@ html { font-size: 106.25%; }
 .md-typeset table:not([class]) th {
   background: var(--md-default-bg-color--lighter);
   font-family: var(--sans);
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--md-default-fg-color--light);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .md-typeset table:not([class]) td {
-  padding: 0.65rem 1rem;
+  padding: 0.45rem 0.6rem;
   border-top: 1px solid var(--md-default-fg-color--lightest);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.md-typeset table:not([class]) tr:hover td {
+/* Row hover — expand to reveal full content */
+.md-typeset table:not([class]) tbody tr {
+  transition: background 0.15s ease;
+}
+
+.md-typeset table:not([class]) tbody tr:hover td {
+  white-space: normal;
+  overflow: visible;
   background: var(--md-default-bg-color--light);
 }
 
