@@ -1,9 +1,9 @@
 /* ============================================================
    HARVESTER INTELLIGENCE — Claude/Anthropic Design System
-   Warm parchment · Terracotta accent · Source Serif + Source Sans
+   Warm parchment · Terracotta accent · Roboto Slab + System Sans
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────── */
 
@@ -41,12 +41,12 @@
   --focus-blue:      #3898ec;
 
   /* Font stacks */
-  --serif:           'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --sans:            'Source Sans 3', system-ui, -apple-system, sans-serif;
+  --serif:           'Roboto Slab', Georgia, 'Times New Roman', serif;
+  --sans:            -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --mono:            'JetBrains Mono', 'Courier New', monospace;
 
   /* Material overrides */
-  --md-text-font:    'Source Sans 3', system-ui, sans-serif;
+  --md-text-font:    -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --md-code-font:    'JetBrains Mono', monospace;
   --md-sidebar-width: 7.5rem;
 }
@@ -663,7 +663,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 .report-calendar {
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--md-default-fg-color--lightest);
+  border: 1px solid var(--md-accent-fg-color);
   border-radius: 10px;
   padding: 0.8rem 1rem 0.6rem;
 }
@@ -674,6 +674,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   font-weight: 500;
   margin-bottom: 0.3rem;
   color: var(--md-default-fg-color);
+  text-align: center;
 }
 
 .report-calendar__grid {
