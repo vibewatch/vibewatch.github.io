@@ -650,37 +650,43 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 }
 
 /* ============================================================
-   REPORT CALENDAR — Monthly grid view
+   REPORT CALENDAR — Monthly grid view (compact)
    ============================================================ */
 
+.report-calendar-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
 .report-calendar {
-  max-width: 420px;
-  margin-bottom: 2rem;
+  flex: 0 0 auto;
+  width: 250px;
 }
 
 .report-calendar__title {
   font-family: var(--serif);
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.3rem;
   color: var(--md-default-fg-color);
 }
 
 .report-calendar__grid {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 4px;
+  border-spacing: 2px;
   table-layout: fixed;
 }
 
 .report-calendar__grid th {
   font-family: var(--sans);
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: var(--md-default-fg-color--lighter);
-  padding: 0.4rem 0;
+  padding: 0.2rem 0;
   text-align: center;
   background: none;
   border: none;
@@ -690,11 +696,11 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   text-align: center;
   padding: 0;
   border: none;
-  border-radius: 8px;
-  width: 3rem;
-  height: 3rem;
+  border-radius: 6px;
+  width: 2rem;
+  height: 2rem;
   vertical-align: middle;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: var(--md-default-fg-color--light);
   background: none;
 }
