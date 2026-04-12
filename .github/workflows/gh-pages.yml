@@ -5,6 +5,13 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'main.py'
+      - 'mkdocs.yml'
+      - 'hooks/**'
+      - 'overrides/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/gh-pages.yml'
   workflow_dispatch:
 
 permissions:
