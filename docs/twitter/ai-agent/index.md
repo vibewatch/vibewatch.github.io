@@ -5,9 +5,6 @@ hide:
 
 # Twitter · AI Agents
 
-All daily briefings from Twitter AI Agent discussions.
+All daily briefings from Twitter AI Agent discussions. Click a highlighted date to view the report.
 
-| Date | Report |
-|------|--------|
-{% for r in list_reports("twitter", "ai-agent") %}| {{ r.date }} | [{{ r.label }} Report →]({{ r.date }}.md) |
-{% endfor %}
+{{ report_calendar("twitter", "ai-agent") }}

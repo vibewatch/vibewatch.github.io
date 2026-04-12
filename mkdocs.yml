@@ -1,9 +1,11 @@
 site_name: Daily Social Signals
-site_url: https://vibewatch.github.io/website/
+site_url: https://vibewatch.github.io/
 site_description: Daily social signals — surfacing themes, pain points, and more from the social web.
+copyright: "© 2026 VibeWatch."
 
 theme:
   name: material
+  custom_dir: overrides
   font: false
   palette:
     - media: "(prefers-color-scheme: light)"
