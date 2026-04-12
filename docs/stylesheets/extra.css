@@ -654,14 +654,18 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
    ============================================================ */
 
 .report-calendar-wrap {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
   gap: 1.5rem;
+  align-items: start;
 }
 
 .report-calendar {
-  flex: 0 0 auto;
-  width: 250px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  padding: 0.8rem 1rem 0.6rem;
 }
 
 .report-calendar__title {
