@@ -648,3 +648,94 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   margin-right: 0.4rem;
   margin-bottom: 0.4rem;
 }
+
+/* ============================================================
+   REPORT CALENDAR — Monthly grid view
+   ============================================================ */
+
+.report-calendar {
+  max-width: 420px;
+  margin-bottom: 2rem;
+}
+
+.report-calendar__title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+  color: var(--md-default-fg-color);
+}
+
+.report-calendar__grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+.report-calendar__grid th {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--md-default-fg-color--lighter);
+  padding: 0.4rem 0;
+  text-align: center;
+  background: none;
+  border: none;
+}
+
+.report-calendar__grid td {
+  text-align: center;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  width: 3rem;
+  height: 3rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: var(--md-default-fg-color--light);
+  background: none;
+}
+
+.report-calendar__grid td:hover {
+  background: none;
+}
+
+.report-calendar__empty {
+  background: none !important;
+}
+
+.report-calendar__day--has-report {
+  background: var(--md-accent-fg-color--transparent) !important;
+  font-weight: 600;
+  color: var(--md-accent-fg-color) !important;
+  border: 1px solid var(--md-accent-fg-color) !important;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.report-calendar__day--has-report:hover {
+  background: var(--md-accent-fg-color) !important;
+  color: var(--ivory) !important;
+  transform: scale(1.1);
+}
+
+[data-md-color-scheme="slate"] .report-calendar__day--has-report:hover {
+  color: var(--deep-dark) !important;
+}
+
+.report-calendar__day--has-report a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.report-calendar__day--has-report:hover a {
+  color: inherit !important;
+}

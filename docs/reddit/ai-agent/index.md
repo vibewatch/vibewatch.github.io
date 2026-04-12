@@ -5,9 +5,6 @@ hide:
 
 # Reddit · AI Agents
 
-All daily briefings from Reddit AI Agent communities.
+All daily briefings from Reddit AI Agent communities. Click a highlighted date to view the report.
 
-| Date | Report |
-|------|--------|
-{% for r in list_reports("reddit", "ai-agent") %}| {{ r.date }} | [{{ r.label }} Report →]({{ r.date }}.md) |
-{% endfor %}
+{{ report_calendar("reddit", "ai-agent") }}

@@ -1,5 +1,6 @@
 """Custom macros for mkdocs-macros-plugin."""
 
+import calendar
 from datetime import datetime
 from pathlib import Path
 
@@ -80,3 +81,63 @@ def define_env(env):
                     }
                 )
         return results
+
+    @env.macro
+    def report_calendar(source: str, topic: str) -> str:
+        """Render monthly calendar grids with clickable report dates."""
+        reports = list_reports(source, topic)
+        if not reports:
+            return ""
+
+        # Build a set of dates and a map to paths
+        date_map: dict[str, str] = {}
+        for r in reports:
+            date_map[r["date"]] = f"{r['date']}/"
+
+        # Group by (year, month)
+        months: dict[tuple[int, int], None] = {}
+        for d in date_map:
+            dt = datetime.strptime(d, "%Y-%m-%d")
+            months[(dt.year, dt.month)] = None
+
+        # Sort months descending (newest first)
+        sorted_months = sorted(months.keys(), reverse=True)
+
+        html_parts = []
+        for year, month in sorted_months:
+            month_name = calendar.month_name[month]
+            cal = calendar.Calendar(firstweekday=6)  # Sunday first
+            weeks = cal.monthdayscalendar(year, month)
+
+            html_parts.append(f'<div class="report-calendar">')
+            html_parts.append(
+                f'<div class="report-calendar__title">{month_name} {year}</div>'
+            )
+            html_parts.append('<table class="report-calendar__grid">')
+            html_parts.append("<thead><tr>")
+            for day_name in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]:
+                html_parts.append(f"<th>{day_name}</th>")
+            html_parts.append("</tr></thead>")
+            html_parts.append("<tbody>")
+
+            for week in weeks:
+                html_parts.append("<tr>")
+                for day in week:
+                    if day == 0:
+                        html_parts.append('<td class="report-calendar__empty"></td>')
+                    else:
+                        date_str = f"{year}-{month:02d}-{day:02d}"
+                        if date_str in date_map:
+                            html_parts.append(
+                                f'<td class="report-calendar__day report-calendar__day--has-report">'
+                                f'<a href="{date_map[date_str]}">{day}</a></td>'
+                            )
+                        else:
+                            html_parts.append(
+                                f'<td class="report-calendar__day">{day}</td>'
+                            )
+                html_parts.append("</tr>")
+
+            html_parts.append("</tbody></table></div>")
+
+        return "\n".join(html_parts)
