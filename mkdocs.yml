@@ -63,9 +63,15 @@ extra:
       label: Twitter
       icon: ":fontawesome-brands-x-twitter:"
   topics:
+    ai:
+      label: AI
+      description: Broad AI trends, breakthroughs, and industry shifts.
     ai-agent:
       label: AI Agents
-      description: Key themes, pain points, and emerging topics.
+      description: Autonomous agents, tool use, and agentic workflows.
+    ai-coding:
+      label: AI Coding
+      description: AI-assisted development, code generation, and developer tooling.
 
 hooks:
   - hooks/title.py

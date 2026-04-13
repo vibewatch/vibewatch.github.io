@@ -5,6 +5,6 @@ hide:
 
 # Reddit · AI Agents
 
-All daily briefings from Reddit AI Agent communities. Click a highlighted date to view the report.
+Daily briefings on autonomous agents, tool use, and agentic workflows from Reddit. Click a highlighted date to view the report.
 
 {{ report_calendar("reddit", "ai-agent") }}
