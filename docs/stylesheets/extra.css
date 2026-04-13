@@ -569,6 +569,14 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   border-radius: 8px;
 }
 
+[data-md-color-scheme="default"] .md-search__input {
+  color: var(--near-black);
+}
+
+[data-md-color-scheme="default"] .md-search__input::placeholder {
+  color: var(--stone-gray);
+}
+
 [data-md-color-scheme="slate"] .md-search__form {
   background: #1c1c1a;
   border: 1px solid rgba(176, 174, 165, 0.13);
