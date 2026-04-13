@@ -17,10 +17,10 @@ This project powers [vibewatch.github.io](https://vibewatch.github.io/), a stati
 | Source | Topic | Path |
 |--------|-------|------|
 | Reddit | AI | `docs/reddit/ai/` |
-| Reddit | AI Agents | `docs/reddit/ai-agent/` |
+| Reddit | AI Agent | `docs/reddit/ai-agent/` |
 | Reddit | AI Coding | `docs/reddit/ai-coding/` |
 | Twitter | AI | `docs/twitter/ai/` |
-| Twitter | AI Agents | `docs/twitter/ai-agent/` |
+| Twitter | AI Agent | `docs/twitter/ai-agent/` |
 | Twitter | AI Coding | `docs/twitter/ai-coding/` |
 
 ## Project Structure
@@ -31,11 +31,11 @@ docs/
 ├── stylesheets/extra.css   # Custom design system
 ├── reddit/
 │   ├── ai/                 # Reddit AI daily reports (YYYY-MM-DD.md)
-│   ├── ai-agent/           # Reddit AI Agents daily reports
+│   ├── ai-agent/           # Reddit AI Agent daily reports
 │   └── ai-coding/          # Reddit AI Coding daily reports
 └── twitter/
     ├── ai/                 # Twitter AI daily reports (YYYY-MM-DD.md)
-    ├── ai-agent/           # Twitter AI Agents daily reports
+    ├── ai-agent/           # Twitter AI Agent daily reports
     └── ai-coding/          # Twitter AI Coding daily reports
 main.py                     # Jinja macros (list_reports, report_calendar, etc.)
 hooks/title.py              # Auto-sets page title from date filenames

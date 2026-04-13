@@ -67,7 +67,7 @@ extra:
       label: AI
       description: Broad AI trends, breakthroughs, and industry shifts.
     ai-agent:
-      label: AI Agents
+      label: AI Agent
       description: Autonomous agents, tool use, and agentic workflows.
     ai-coding:
       label: AI Coding
