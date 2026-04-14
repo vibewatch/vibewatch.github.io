@@ -44,3 +44,56 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - name: Detect new report files
+        id: detect
+        run: |
+          # Find newly added .md report files (not .zh.md translations)
+          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'docs/reddit/**/*.md' 'docs/twitter/**/*.md' | grep -v '\.zh\.md$' || true)
+          if [ -z "$NEW_FILES" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No new report files detected."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            # Build subject and body from first new file
+            FIRST_FILE=$(echo "$NEW_FILES" | head -1)
+            # Extract source and topic from path: docs/{source}/{topic}/{date}.md
+            SOURCE=$(echo "$FIRST_FILE" | cut -d'/' -f2)
+            TOPIC=$(echo "$FIRST_FILE" | cut -d'/' -f3)
+            DATE=$(basename "$FIRST_FILE" .md)
+            COUNT=$(echo "$NEW_FILES" | wc -l)
+            SUBJECT="New AI Pulse Daily report: ${SOURCE}/${TOPIC} ${DATE}"
+            if [ "$COUNT" -gt 1 ]; then
+              SUBJECT="New AI Pulse Daily: ${COUNT} new reports (${DATE})"
+            fi
+            echo "subject=${SUBJECT}" >> "$GITHUB_OUTPUT"
+            # Build links list
+            LINKS=""
+            while IFS= read -r f; do
+              # Convert docs/reddit/ai/2026-04-14.md → reddit/ai/2026-04-14/
+              REL=$(echo "$f" | sed 's|^docs/||; s|\.md$|/|')
+              S=$(echo "$f" | cut -d'/' -f2)
+              T=$(echo "$f" | cut -d'/' -f3)
+              D=$(basename "$f" .md)
+              LINKS="${LINKS}<li><a href=\"https://genisisiq.com/${REL}\">${S} / ${T} — ${D}</a></li>"
+            done <<< "$NEW_FILES"
+            BODY="<h2>New Reports Published</h2><ul>${LINKS}</ul><p>Visit <a href=\"https://genisisiq.com\">AI Pulse Daily</a> for more.</p><p style=\"font-size:12px;color:#999;\"><a href=\"{{UNSUBSCRIBE_URL}}\">Unsubscribe</a></p>"
+            echo "body<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$BODY" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send newsletter notification
+        if: steps.detect.outputs.skip != 'true'
+        run: |
+          curl -s -X POST "${{ secrets.NEWSLETTER_WORKER_URL }}/api/send" \
+            -H "Authorization: Bearer ${{ secrets.NEWSLETTER_SEND_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"subject\": $(echo '${{ steps.detect.outputs.subject }}' | jq -Rs .), \"html_body\": $(echo '${{ steps.detect.outputs.body }}' | jq -Rs .)}"

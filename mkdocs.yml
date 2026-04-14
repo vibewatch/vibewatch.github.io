@@ -37,6 +37,7 @@ extra_css:
 
 extra_javascript:
   - javascripts/external-links.js
+  - javascripts/subscribe.js
 
 markdown_extensions:
   - attr_list

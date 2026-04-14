@@ -959,3 +959,122 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 .report-calendar__day--has-report:hover a {
   color: inherit !important;
 }
+
+
+/* ============================================================
+   NEWSLETTER SUBSCRIBE BAR
+   ============================================================ */
+
+.md-banner {
+  background: var(--md-primary-fg-color) !important;
+  color: #fff !important;
+}
+
+.newsletter-bar {
+  display: flex;
+  justify-content: center;
+  padding: 0.4rem 1rem;
+}
+
+.newsletter-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 680px;
+}
+
+.newsletter-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0.95;
+}
+
+.newsletter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.newsletter-email {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  padding: 0.3em 0.7em;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  outline: none;
+  width: 200px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.newsletter-email::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.newsletter-email:focus {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.newsletter-btn {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3em 1em;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #fff;
+}
+
+.newsletter-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.newsletter-msg {
+  font-size: 0.72rem;
+  font-weight: 500;
+  min-height: 1em;
+}
+
+.newsletter-msg--success {
+  color: #c4f5c4;
+}
+
+.newsletter-msg--error {
+  color: #ffd0c0;
+}
+
+/* ── Mobile responsive ── */
+
+@media screen and (max-width: 48em) {
+  .newsletter-form {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .newsletter-inputs {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .newsletter-email {
+    flex: 1;
+    width: auto;
+  }
+}
