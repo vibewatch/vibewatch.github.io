@@ -1,9 +1,17 @@
 /* ============================================================
    HARVESTER INTELLIGENCE — Claude/Anthropic Design System
-   Warm parchment · Terracotta accent · Roboto Slab + System Sans
+   Warm parchment · Terracotta accent · Mona Sans + Noto Sans SC
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;600;700;800;900&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
+
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('https://github.blog/wp-content/themes/github-2021/dist/fonts/mona-sans.woff2') format('woff2');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────── */
 
@@ -41,12 +49,12 @@
   --focus-blue:      #3898ec;
 
   /* Font stacks */
-  --serif:           'Roboto Slab', Georgia, 'Times New Roman', serif;
-  --sans:            -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --serif:           'Mona Sans', 'Noto Sans SC', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --sans:            'Mona Sans', 'Noto Sans SC', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --mono:            'JetBrains Mono', 'Courier New', monospace;
 
   /* Material overrides */
-  --md-text-font:    -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --md-text-font:    'Mona Sans', 'Noto Sans SC', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --md-code-font:    'JetBrains Mono', monospace;
   --md-sidebar-width: 7.5rem;
 }
@@ -175,8 +183,8 @@ html { font-size: 106.25%; }
 }
 
 .md-header__title {
-  font-family: var(--serif);
-  font-weight: 500;
+  font-family: var(--sans);
+  font-weight: 600;
   letter-spacing: -0.01em;
   font-size: 1.06rem;
 }
@@ -219,9 +227,9 @@ html { font-size: 106.25%; }
 
 .md-typeset h1,
 .md-typeset h2 {
-  font-family: var(--serif);
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .md-typeset h1 {
@@ -241,10 +249,10 @@ html { font-size: 106.25%; }
 }
 
 .md-typeset h3 {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.15rem;
-  font-weight: 500;
-  letter-spacing: -0.005em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin-top: 1.4rem;
 }
 
@@ -592,7 +600,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
    ============================================================ */
 
 .hero-tagline {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.15rem;
   font-weight: 400;
   line-height: 1.60;
@@ -711,7 +719,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 }
 
 .report-calendar__title {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 0.8rem;
