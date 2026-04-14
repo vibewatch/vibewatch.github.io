@@ -30,13 +30,17 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Identify English report markdown files in reports/ without a Chinese counterpart and generate translations." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Translate English markdown reports in reports/ lacking Chinese versions. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Check for new translations
         id: check-translations
         working-directory: harvester
         run: |
-          if [ -n "$(git status --porcelain reports/ | grep '\.zh\.md$')" ]; then
+          # Detect uncommitted .zh.md files (normal case)
+          UNSTAGED=$(git status --porcelain reports/ | grep '\.zh\.md$' || true)
+          # Detect .zh.md files already committed by Copilot CLI (fallback)
+          COMMITTED=$(git log origin/main..HEAD --name-only --diff-filter=A 2>/dev/null | grep '\.zh\.md$' || true)
+          if [ -n "$UNSTAGED" ] || [ -n "$COMMITTED" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
