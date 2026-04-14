@@ -102,3 +102,4 @@ extra:
 
 hooks:
   - hooks/title.py
+  - hooks/nav_prune.py

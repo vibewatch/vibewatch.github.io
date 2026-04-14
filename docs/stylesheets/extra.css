@@ -27,6 +27,11 @@
   font-weight: 700;
 }
 
+:lang(zh) .md-nav__link,
+:lang(zh) .md-tabs__link {
+  font-weight: 500;
+}
+
 /* ─── DESIGN TOKENS ──────────────────────────────────────── */
 
 :root {
@@ -453,7 +458,14 @@ html { font-size: 106.25%; }
 .md-typeset hr {
   border: none;
   border-top: 1px solid var(--md-default-fg-color--lightest);
-  margin: 1.5rem 0;
+  margin: 0.8rem 0;
+}
+
+/* Card divider — tighter spacing, accent color */
+.md-typeset .grid.cards > :is(ul, ol) > li > hr {
+  margin: 0.35rem 0;
+  border-top-color: var(--md-accent-fg-color);
+  opacity: 0.5;
 }
 
 /* ============================================================
@@ -661,7 +673,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   max-width: 680px;
   border-left: 3px solid var(--md-accent-fg-color);
   padding: 0.6rem 1.5rem;
-  margin: 0.8rem 0 1.2rem;
+  margin: 0.8rem 0 0.4rem;
   font-style: normal;
   background: var(--md-accent-fg-color--transparent);
   border-radius: 0 8px 8px 0;
@@ -729,11 +741,44 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   background: var(--stone-gray);
 }
 
-/* ─── REPORT BUTTONS (horizontal wrap) ───────────────────── */
+/* ─── REPORT BUTTONS (flex row) ───────────────────────── */
+
+.md-typeset .grid.cards > :is(ul, ol) > li > p:last-of-type {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
 
 .grid.cards .md-button {
-  margin-right: 0.4rem;
-  margin-bottom: 0.4rem;
+  margin: 0;
+  font-size: 0.78rem;
+  padding: 0.4em 0.8em;
+}
+
+/* ── Card title row: flex with arrow pushed right ── */
+.md-typeset .grid.cards > :is(ul, ol) > li > p:first-of-type {
+  display: flex;
+  align-items: center;
+}
+
+.card-arrow {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  color: var(--md-default-fg-color--lighter) !important;
+  text-decoration: none !important;
+  font-size: inherit;
+  font-weight: 500;
+  padding: 0.2em 0.3em;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.card-arrow:hover {
+  color: var(--md-accent-fg-color) !important;
+  background: var(--md-accent-fg-color--transparent);
 }
 
 /* ============================================================
