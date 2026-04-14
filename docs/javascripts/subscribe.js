@@ -10,14 +10,23 @@
 
   if (!form) return;
 
+  const isZh = document.documentElement.lang === "zh";
+  const btnLabel = isZh ? "订阅" : "Subscribe";
+
+  const i18n = {
+    confirmed:    isZh ? "✓ 订阅已确认！欢迎加入。"       : "✓ Subscription confirmed! Welcome aboard.",
+    already:      isZh ? "你已经订阅过了。"                : "You're already subscribed.",
+    networkError: isZh ? "网络错误，请稍后重试。"          : "Network error. Please try again.",
+    fallbackError:isZh ? "出了点问题"                      : "Something went wrong",
+  };
+
   // Show confirmation message if redirected from confirm link
   const params = new URLSearchParams(window.location.search);
   if (params.get("subscribed") === "confirmed") {
-    showMsg("✓ Subscription confirmed! Welcome aboard.", "success");
-    // Clean URL
+    showMsg(i18n.confirmed, "success");
     window.history.replaceState({}, "", window.location.pathname);
   } else if (params.get("subscribed") === "already") {
-    showMsg("You're already subscribed.", "success");
+    showMsg(i18n.already, "success");
     window.history.replaceState({}, "", window.location.pathname);
   }
 
@@ -44,13 +53,13 @@
         showMsg("✓ " + data.message, "success");
         input.value = "";
       } else {
-        showMsg(data.error || "Something went wrong", "error");
+        showMsg(data.error || i18n.fallbackError, "error");
       }
     } catch {
-      showMsg("Network error. Please try again.", "error");
+      showMsg(i18n.networkError, "error");
     } finally {
       btn.disabled = false;
-      btn.textContent = "Subscribe";
+      btn.textContent = btnLabel;
     }
   });
 

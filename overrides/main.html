@@ -19,15 +19,24 @@
   {% endif %}
 {% endblock %}
 
-{% block announce %}
-<div class="newsletter-bar" id="newsletter-bar">
-  <form class="newsletter-form" id="newsletter-form">
-    <span class="newsletter-label">📬 Get daily AI insights in your inbox</span>
-    <div class="newsletter-inputs">
-      <input type="email" name="email" placeholder="you@example.com" required class="newsletter-email" id="newsletter-email" autocomplete="email" />
-      <button type="submit" class="newsletter-btn" id="newsletter-btn">Subscribe</button>
-    </div>
-    <span class="newsletter-msg" id="newsletter-msg"></span>
-  </form>
-</div>
+{% block content %}
+  {{ super() }}
+  <div class="newsletter-footer" id="newsletter-bar">
+    <form class="newsletter-form" id="newsletter-form">
+      {% if config.theme.language == "zh" %}
+      <span class="newsletter-label">📬 每日 AI 精选，直达你的收件箱</span>
+      <div class="newsletter-inputs">
+        <input type="email" name="email" placeholder="you@example.com" required class="newsletter-email" id="newsletter-email" autocomplete="email" />
+        <button type="submit" class="newsletter-btn" id="newsletter-btn">订阅</button>
+      </div>
+      {% else %}
+      <span class="newsletter-label">📬 Get daily AI insights in your inbox</span>
+      <div class="newsletter-inputs">
+        <input type="email" name="email" placeholder="you@example.com" required class="newsletter-email" id="newsletter-email" autocomplete="email" />
+        <button type="submit" class="newsletter-btn" id="newsletter-btn">Subscribe</button>
+      </div>
+      {% endif %}
+      <span class="newsletter-msg" id="newsletter-msg"></span>
+    </form>
+  </div>
 {% endblock %}
