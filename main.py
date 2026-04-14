@@ -21,16 +21,31 @@ def define_env(env):
         if not folder.is_dir():
             return []
 
+        # Detect language from the current page
+        is_zh = False
+        if hasattr(env, "page") and env.page and hasattr(env.page, "file"):
+            is_zh = env.page.file.src_path.endswith(".zh.md")
+
+        month_names_zh = {
+            1: "1月", 2: "2月", 3: "3月", 4: "4月",
+            5: "5月", 6: "6月", 7: "7月", 8: "8月",
+            9: "9月", 10: "10月", 11: "11月", 12: "12月",
+        }
+
         reports = []
         for f in sorted(folder.glob("*.md"), reverse=True):
             try:
                 dt = datetime.strptime(f.stem, "%Y-%m-%d")
             except ValueError:
                 continue
+            if is_zh:
+                label = f"{month_names_zh[dt.month]}{dt.day}日"
+            else:
+                label = dt.strftime("%b %-d")
             reports.append(
                 {
                     "date": f.stem,
-                    "label": dt.strftime("%b %-d"),
+                    "label": label,
                     "path": f"{source}/{topic}/{f.name}",
                 }
             )
