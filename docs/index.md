@@ -6,7 +6,7 @@ hide:
 # AI Pulse Daily
 
 <div class="hero-tagline">
-Daily AI pulse from the social web — trends, breakthroughs, pain points, and emerging topics surfaced from Reddit and Twitter.
+Daily AI pulse from the social web — trends, breakthroughs, pain points, and emerging topics.
 </div>
 
 ---

@@ -1,0 +1,14 @@
+{#- Language toggle button — switches between EN ↔ 中文 -#}
+{% if config.extra.alternate %}
+  <div class="md-header__option">
+    {% for alt in config.extra.alternate %}
+      {% if alt.lang != config.theme.language %}
+        <a href="{{ alt.link | url }}" hreflang="{{ alt.lang }}"
+           class="md-header__button md-lang-toggle"
+           title="{{ alt.name }}">
+          {{ alt.name }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

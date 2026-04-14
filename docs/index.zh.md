@@ -6,7 +6,7 @@ hide:
 # AI趋势速递
 
 <div class="hero-tagline">
-每日AI趋势速递 — 从Reddit和Twitter捕捉趋势、热点、痛点与新兴话题。
+每日AI趋势速递 — 洞察社交网络，捕捉趋势、热点、痛点与新兴话题。
 </div>
 
 ---
