@@ -5,5 +5,6 @@ import re
 
 def on_page_read_source(page, config):
     stem = page.file.name.removesuffix(".md")
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", stem):
-        page.title = stem
+    m = re.fullmatch(r"(\d{4}-\d{2}-\d{2})(\.zh)?", stem)
+    if m:
+        page.title = m.group(1)

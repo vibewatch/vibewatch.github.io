@@ -7,6 +7,7 @@ dependencies = [
     "mkdocs-material",
     "mkdocs-awesome-pages-plugin",
     "mkdocs-macros-plugin",
+    "mkdocs-static-i18n[material]",
 ]
 
 [tool.hatch.build.targets.wheel]

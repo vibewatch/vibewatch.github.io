@@ -27,7 +27,6 @@ theme:
     - navigation.sections
     - navigation.indexes
     - navigation.top
-    - navigation.instant
     - search.suggest
     - search.highlight
     - toc.follow
@@ -52,6 +51,28 @@ markdown_extensions:
 plugins:
   - search
   - awesome-pages
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: zh
+          name: 中文
+          build: true
+          site_name: 每日社交信号
+          site_description: 每日社交信号 — 从 Reddit 和 Twitter 挖掘主题、痛点和新兴话题。
+          copyright: "©2026 GenisisIQ"
+          nav_translations:
+            Daily Social Signals: 每日社交信号
+            Reddit: Reddit
+            Twitter: Twitter
+            AI: AI
+            AI Agent: AI 智能体
+            AI Coding: AI 编程
   - macros
 
 extra:
