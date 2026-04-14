@@ -35,6 +35,9 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - javascripts/external-links.js
+
 markdown_extensions:
   - attr_list
   - md_in_html

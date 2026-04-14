@@ -574,6 +574,11 @@ html { font-size: 106.25%; }
   background: var(--md-accent-fg-color--transparent);
 }
 
+/* Prevent double background when container div and inner link both match */
+.md-nav__container.md-nav__link {
+  background: none !important;
+}
+
 .md-nav__link:is(:focus, :hover) {
   color: var(--md-accent-fg-color);
   background: var(--md-accent-fg-color--transparent);
