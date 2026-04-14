@@ -695,10 +695,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 .md-typeset .grid.cards > :is(ul, ol) > li:hover,
 .md-typeset .grid.cards > .result:hover {
   border-color: var(--md-accent-fg-color);
-  transform: translateY(-2px);
-  box-shadow:
-    0px 0px 0px 1px var(--md-accent-fg-color),
-    rgba(0, 0, 0, 0.05) 0px 4px 24px;
+  box-shadow: 0px 0px 0px 1px var(--md-accent-fg-color);
 }
 
 /* ============================================================
@@ -805,10 +802,7 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 
 .report-calendar:hover {
   border-color: var(--md-accent-fg-color);
-  transform: translateY(-2px);
-  box-shadow:
-    0px 0px 0px 1px var(--md-accent-fg-color),
-    rgba(0, 0, 0, 0.05) 0px 4px 24px;
+  box-shadow: 0px 0px 0px 1px var(--md-accent-fg-color);
 }
 
 [data-md-color-scheme="slate"] .report-calendar {
