@@ -1,15 +1,15 @@
-name: Build reddit reports
+name: Translate reports to Chinese
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 4 * * *'
 
 permissions:
   contents: write
 
 jobs:
-  build-reports:
+  translate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout harvester
@@ -30,52 +30,53 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate trend reports for Reddit JSON files in data/reddit/ without markdown counterparts, dated before today." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Identify English report markdown files in reports/ without a Chinese counterpart and generate translations." --model claude-opus-4.6 --yolo --no-ask-user
 
-      - name: Check for new reports
-        id: check-reports
+      - name: Check for new translations
+        id: check-translations
         working-directory: harvester
         run: |
-          if [ -n "$(git status --porcelain reports/reddit/ | grep '\.md$')" ]; then
+          if [ -n "$(git status --porcelain reports/ | grep '\.zh\.md$')" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Push harvester changes
-        if: steps.check-reports.outputs.has_changes == 'true'
+        if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: harvester
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'reports/reddit/**/*.md'
-          git commit -m "Add reddit reports for $(date -u +%Y-%m-%d)"
+          git add 'reports/**/*.zh.md'
+          git commit -m "Add Chinese translations for $(date -u +%Y-%m-%d)"
           git pull --rebase
           git push
 
       - name: Checkout website
-        if: steps.check-reports.outputs.has_changes == 'true'
+        if: steps.check-translations.outputs.has_changes == 'true'
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.WEBSITE_PAT }}
           path: website
 
-      - name: Copy reports to docs
-        if: steps.check-reports.outputs.has_changes == 'true'
+      - name: Copy translations to docs
+        if: steps.check-translations.outputs.has_changes == 'true'
         run: |
-          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/reddit/ website/docs/reddit/
+          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/twitter/ website/docs/twitter/
+          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/reddit/ website/docs/reddit/
 
       - name: Push website changes
-        if: steps.check-reports.outputs.has_changes == 'true'
+        if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: website
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/reddit/
+          git add docs/
           if git diff --cached --quiet; then
-            echo "No new docs to push"
+            echo "No new translations to push"
           else
-            git commit -m "Update reddit reports for $(date -u +%Y-%m-%d)"
+            git commit -m "Add Chinese translations for $(date -u +%Y-%m-%d)"
             git pull --rebase
             git push
           fi

@@ -30,7 +30,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate trend reports for all Twitter JSON files lacking corresponding markdown files, where the filenames (in yyyy-MM-dd format) indicate dates earlier than today. Only process files under data/twitter/. Analyze them sequentially — one file at a time." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Generate trend reports for Twitter JSON files in data/twitter/ without markdown counterparts, dated before today." --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Check for new reports
         id: check-reports
