@@ -125,41 +125,59 @@ def define_env(env):
         # Sort months descending (newest first)
         sorted_months = sorted(months.keys(), reverse=True)
 
+        # Count total reports for summary
+        total_reports = len(date_map)
+
         html_parts = ['<div class="report-calendar-wrap">']
         for year, month in sorted_months:
             if is_zh:
                 month_label = f"{year}年 {month_names_zh[month]}"
             else:
                 month_label = f"{calendar.month_name[month]} {year}"
+
+            # Count reports in this month
+            month_report_count = sum(
+                1 for d in date_map
+                if d.startswith(f"{year}-{month:02d}-")
+            )
+
             cal = calendar.Calendar(firstweekday=6)  # Sunday first
             weeks = cal.monthdayscalendar(year, month)
 
             html_parts.append(f'<div class="report-calendar">')
             html_parts.append(
+                f'<div class="report-calendar__header">'
                 f'<div class="report-calendar__title">{month_label}</div>'
+                f'<div class="report-calendar__count">{month_report_count}</div>'
+                f'</div>'
             )
             html_parts.append('<table class="report-calendar__grid">')
             html_parts.append("<thead><tr>")
-            for day_name in day_names:
-                html_parts.append(f"<th>{day_name}</th>")
+            for i, day_name in enumerate(day_names):
+                weekend_cls = ' class="report-calendar__weekend"' if i == 0 or i == 6 else ""
+                html_parts.append(f"<th{weekend_cls}>{day_name}</th>")
             html_parts.append("</tr></thead>")
             html_parts.append("<tbody>")
 
             for week in weeks:
                 html_parts.append("<tr>")
-                for day in week:
+                for col, day in enumerate(week):
                     if day == 0:
                         html_parts.append('<td class="report-calendar__empty"></td>')
                     else:
                         date_str = f"{year}-{month:02d}-{day:02d}"
+                        classes = ["report-calendar__day"]
+                        if col == 0 or col == 6:
+                            classes.append("report-calendar__day--weekend")
                         if date_str in date_map:
+                            classes.append("report-calendar__day--has-report")
                             html_parts.append(
-                                f'<td class="report-calendar__day report-calendar__day--has-report">'
+                                f'<td class="{" ".join(classes)}">'
                                 f'<a href="{date_map[date_str]}">{day}</a></td>'
                             )
                         else:
                             html_parts.append(
-                                f'<td class="report-calendar__day">{day}</td>'
+                                f'<td class="{" ".join(classes)}">{day}</td>'
                             )
                 html_parts.append("</tr>")
 

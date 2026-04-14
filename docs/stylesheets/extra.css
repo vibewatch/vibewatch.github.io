@@ -792,67 +792,110 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 .report-calendar {
   width: 100%;
   min-width: 0;
-  border-radius: 12px;
-  padding: 1.4rem 1.6rem 1.2rem;
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem 1rem;
   background: var(--md-default-bg-color--light);
   border: 1px solid var(--md-default-fg-color--lightest);
-  box-shadow: 0px 0px 0px 1px var(--md-default-fg-color--lightest);
-  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .report-calendar:hover {
   border-color: var(--md-accent-fg-color);
-  box-shadow: 0px 0px 0px 1px var(--md-accent-fg-color);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(201, 100, 66, 0.08);
 }
 
 [data-md-color-scheme="slate"] .report-calendar {
-  border-color: rgba(176, 174, 165, 0.1);
-  box-shadow: 0px 0px 0px 1px rgba(176, 174, 165, 0.1);
+  border-color: rgba(176, 174, 165, 0.12);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-md-color-scheme="slate"] .report-calendar:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(217, 119, 87, 0.12);
+}
+
+/* ── Header: month title + report count badge ── */
+
+.report-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
 }
 
 .report-calendar__title {
   font-family: var(--sans);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  margin-bottom: 0.8rem;
   color: var(--md-default-fg-color);
-  text-align: center;
   letter-spacing: -0.01em;
 }
+
+.report-calendar__count {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 99px;
+  color: var(--md-accent-fg-color);
+  background: var(--md-accent-fg-color--transparent);
+}
+
+/* ── Grid layout ── */
 
 .report-calendar__grid {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 4px;
+  border-spacing: 6px;
   table-layout: fixed;
 }
 
 .report-calendar__grid th {
   font-family: var(--sans);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--md-default-fg-color--lighter);
-  padding: 0.35rem 0;
+  padding: 0.3rem 0;
   text-align: center;
   background: none;
   border: none;
+}
+
+.report-calendar__grid th.report-calendar__weekend {
+  color: var(--md-accent-fg-color);
+  opacity: 0.55;
 }
 
 .report-calendar__grid td {
   text-align: center;
   padding: 0;
   border: none;
-  border-radius: 10px;
-  width: 2.4rem;
-  height: 2.4rem;
+  border-radius: 9px;
+  width: 2rem;
+  height: 2rem;
   vertical-align: middle;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--md-default-fg-color--light);
   background: none;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
+  position: relative;
 }
 
 .report-calendar__grid td:hover {
@@ -863,6 +906,12 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   background: none !important;
 }
 
+/* ── Weekend days (subtle tint) ── */
+
+.report-calendar__day--weekend {
+  color: var(--md-default-fg-color--lighter);
+}
+
 /* ── Active day (has report) ── */
 
 .report-calendar__day--has-report {
@@ -870,19 +919,26 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   font-weight: 700;
   color: #fff !important;
   border: none !important;
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
+  box-shadow: 0 2px 6px rgba(201, 100, 66, 0.25);
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
 .report-calendar__day--has-report:hover {
   background: var(--coral) !important;
   color: #fff !important;
-  transform: scale(1.15);
+  transform: scale(1.08);
+  box-shadow: 0 3px 10px rgba(201, 100, 66, 0.35);
+}
+
+[data-md-color-scheme="slate"] .report-calendar__day--has-report {
+  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.3);
 }
 
 [data-md-color-scheme="slate"] .report-calendar__day--has-report:hover {
   color: #fff !important;
+  box-shadow: 0 3px 12px rgba(217, 119, 87, 0.4);
 }
 
 .report-calendar__day--has-report a {
