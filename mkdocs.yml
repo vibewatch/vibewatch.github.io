@@ -1,6 +1,6 @@
-site_name: Daily Social Signals
+site_name: AI Pulse Daily
 site_url: https://vibewatch.github.io/
-site_description: Daily social signals — surfacing themes, pain points, and more from the social web.
+site_description: AI Pulse Daily — surfacing themes, pain points, and more from the social web.
 copyright: "©2026 GenisisIQ"
 
 theme:
@@ -63,11 +63,11 @@ plugins:
         - locale: zh
           name: 中文
           build: true
-          site_name: 每日社交信号
-          site_description: 每日社交信号 — 从 Reddit 和 Twitter 挖掘主题、痛点和新兴话题。
+          site_name: AI趋势速递
+          site_description: AI趋势速递 — 从 Reddit 和 Twitter 挖掘主题、痛点和新兴话题。
           copyright: "©2026 GenisisIQ"
           nav_translations:
-            Daily Social Signals: 每日社交信号
+            AI Pulse Daily: AI趋势速递
             Reddit: Reddit
             Twitter: Twitter
             AI: AI
@@ -90,12 +90,15 @@ extra:
     ai:
       label: AI
       description: Broad AI trends, breakthroughs, and industry shifts.
+      description_zh: AI 前沿趋势、行业动态与重大变革。
     ai-agent:
       label: AI Agent
       description: Autonomous agents, tool use, and agentic workflows.
+      description_zh: 自主智能体、工具调用与智能体工作流。
     ai-coding:
       label: AI Coding
       description: AI-assisted development, code generation, and developer tooling.
+      description_zh: AI 辅助开发、代码生成与开发者工具。
 
 hooks:
   - hooks/title.py

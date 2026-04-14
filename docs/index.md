@@ -3,10 +3,10 @@ hide:
   - toc
 ---
 
-# Daily Social Signals
+# AI Pulse Daily
 
 <div class="hero-tagline">
-Social media signal briefings — themes, pain points, and emerging topics from Reddit and Twitter. For educational purposes only.
+Daily AI pulse from the social web — trends, breakthroughs, pain points, and emerging topics surfaced from Reddit and Twitter.
 </div>
 
 ---

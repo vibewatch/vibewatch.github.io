@@ -3,7 +3,7 @@
    Warm parchment · Terracotta accent · Mona Sans + Noto Sans SC
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap');
 
 @font-face {
   font-family: 'Mona Sans';
@@ -11,6 +11,20 @@
   font-weight: 200 900;
   font-style: normal;
   font-display: swap;
+}
+
+/* CJK weight compensation — Noto Sans SC renders thinner than Mona Sans
+   at the same weight, so we bump CJK body text slightly. */
+:lang(zh) {
+  font-weight: 450;
+}
+:lang(zh) strong,
+:lang(zh) b,
+:lang(zh) h1,
+:lang(zh) h2,
+:lang(zh) h3,
+:lang(zh) h4 {
+  font-weight: 700;
 }
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────── */

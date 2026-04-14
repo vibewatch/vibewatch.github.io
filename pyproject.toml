@@ -1,7 +1,7 @@
 [project]
 name = "website"
 version = "0.1.0"
-description = "Social signals daily"
+description = "AI Pulse Daily"
 requires-python = ">=3.12"
 dependencies = [
     "mkdocs-material",

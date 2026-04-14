@@ -1,6 +1,6 @@
-# Daily Social Signals
+# AI Pulse Daily
 
-Daily social signal briefings — surfacing themes, pain points, and emerging topics from the social web.
+AI Pulse Daily — surfacing themes, pain points, and emerging topics from the social web.
 
 ## Overview
 

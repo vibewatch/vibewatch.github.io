@@ -3,10 +3,10 @@ hide:
   - toc
 ---
 
-# 每日社交信号
+# AI趋势速递
 
 <div class="hero-tagline">
-社交媒体信号简报 — 来自 Reddit 和 Twitter 的主题、痛点和新兴话题。仅供教育用途。
+每日AI趋势速递 — 从Reddit和Twitter捕捉趋势、热点、痛点与新兴话题。
 </div>
 
 ---

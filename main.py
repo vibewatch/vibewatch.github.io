@@ -50,6 +50,11 @@ def define_env(env):
         sources_meta = extra.get("sources", {})
         topics_meta = extra.get("topics", {})
 
+        # Detect language from the current page source file
+        is_zh = False
+        if hasattr(env, "page") and env.page and hasattr(env.page, "file"):
+            is_zh = env.page.file.src_path.endswith(".zh.md")
+
         results = []
         for source_dir in sorted(docs_dir.iterdir()):
             if not source_dir.is_dir() or source_dir.name.startswith((".", "_")):
@@ -67,6 +72,7 @@ def define_env(env):
                     continue
                 smeta = sources_meta.get(source_name, {})
                 tmeta = topics_meta.get(topic_name, {})
+                desc_key = "description_zh" if is_zh else "description"
                 results.append(
                     {
                         "source": source_name,
@@ -76,7 +82,7 @@ def define_env(env):
                         "topic_label": tmeta.get(
                             "label", topic_name.replace("-", " ").title()
                         ),
-                        "description": tmeta.get("description", ""),
+                        "description": tmeta.get(desc_key, tmeta.get("description", "")),
                         "reports": reports,
                     }
                 )
