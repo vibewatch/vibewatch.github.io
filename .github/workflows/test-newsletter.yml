@@ -1,0 +1,70 @@
+name: Test newsletter notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      actually_send:
+        description: Send the request to the newsletter worker
+        required: true
+        default: false
+        type: boolean
+      subject:
+        description: Subject line for the test message
+        required: true
+        default: Test AI Pulse Daily notification
+        type: string
+      html_body:
+        description: HTML body for the test message
+        required: true
+        default: |
+          <h2>Test notification</h2>
+          <p>This is a manual test from GitHub Actions.</p>
+          <p>Visit <a href="https://genisisiq.com">AI Pulse Daily</a> for more.</p>
+          <p style="font-size:12px;color:#999;"><a href="{{UNSUBSCRIBE_URL}}">Unsubscribe</a></p>
+        type: string
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preview payload
+        env:
+          NEWSLETTER_SUBJECT: ${{ inputs.subject }}
+          NEWSLETTER_HTML_BODY: ${{ inputs.html_body }}
+        run: |
+          jq -n \
+            --arg subject "$NEWSLETTER_SUBJECT" \
+            --arg html_body "$NEWSLETTER_HTML_BODY" \
+            '{subject: $subject, html_body: $html_body}'
+
+  send:
+    if: ${{ inputs.actually_send }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send test newsletter notification
+        env:
+          NEWSLETTER_WORKER_URL: ${{ secrets.NEWSLETTER_WORKER_URL }}
+          NEWSLETTER_SEND_KEY: ${{ secrets.NEWSLETTER_SEND_KEY }}
+          NEWSLETTER_SUBJECT: ${{ inputs.subject }}
+          NEWSLETTER_HTML_BODY: ${{ inputs.html_body }}
+        run: |
+          if [ -z "$NEWSLETTER_WORKER_URL" ]; then
+            echo "NEWSLETTER_WORKER_URL is not configured."
+            exit 1
+          fi
+
+          WORKER_URL="${NEWSLETTER_WORKER_URL%/}"
+          if ! printf '%s\n' "$WORKER_URL" | grep -Eq '^https?://'; then
+            WORKER_URL="https://$WORKER_URL"
+          fi
+
+          jq -n \
+            --arg subject "$NEWSLETTER_SUBJECT" \
+            --arg html_body "$NEWSLETTER_HTML_BODY" \
+            '{subject: $subject, html_body: $html_body}' > payload.json
+
+          curl --fail-with-body -sS --retry 3 --retry-all-errors \
+            -X POST "$WORKER_URL/api/send" \
+            -H "Authorization: Bearer $NEWSLETTER_SEND_KEY" \
+            -H "Content-Type: application/json" \
+            --data @payload.json

@@ -92,8 +92,29 @@ jobs:
           fi
       - name: Send newsletter notification
         if: steps.detect.outputs.skip != 'true'
+        env:
+          NEWSLETTER_WORKER_URL: ${{ secrets.NEWSLETTER_WORKER_URL }}
+          NEWSLETTER_SEND_KEY: ${{ secrets.NEWSLETTER_SEND_KEY }}
+          NEWSLETTER_SUBJECT: ${{ steps.detect.outputs.subject }}
+          NEWSLETTER_HTML_BODY: ${{ steps.detect.outputs.body }}
         run: |
-          curl -s -X POST "${{ secrets.NEWSLETTER_WORKER_URL }}/api/send" \
-            -H "Authorization: Bearer ${{ secrets.NEWSLETTER_SEND_KEY }}" \
+          if [ -z "$NEWSLETTER_WORKER_URL" ]; then
+            echo "NEWSLETTER_WORKER_URL is not configured."
+            exit 1
+          fi
+
+          WORKER_URL="${NEWSLETTER_WORKER_URL%/}"
+          if ! printf '%s\n' "$WORKER_URL" | grep -Eq '^https?://'; then
+            WORKER_URL="https://$WORKER_URL"
+          fi
+
+          jq -n \
+            --arg subject "$NEWSLETTER_SUBJECT" \
+            --arg html_body "$NEWSLETTER_HTML_BODY" \
+            '{subject: $subject, html_body: $html_body}' > payload.json
+
+          curl --fail-with-body -sS --retry 3 --retry-all-errors \
+            -X POST "$WORKER_URL/api/send" \
+            -H "Authorization: Bearer $NEWSLETTER_SEND_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"subject\": $(echo '${{ steps.detect.outputs.subject }}' | jq -Rs .), \"html_body\": $(echo '${{ steps.detect.outputs.body }}' | jq -Rs .)}"
+            --data @payload.json
