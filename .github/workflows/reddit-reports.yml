@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  HARVESTER_REPO: vibewatch/harvester
+
 jobs:
   build-reports:
     runs-on: ubuntu-latest
@@ -15,7 +18,7 @@ jobs:
       - name: Checkout harvester
         uses: actions/checkout@v6
         with:
-          repository: huangyingting/harvester
+          repository: ${{ env.HARVESTER_REPO }}
           token: ${{ secrets.HARVESTER_PAT }}
           path: harvester
 
