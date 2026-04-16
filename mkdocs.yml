@@ -68,12 +68,13 @@ plugins:
           name: 中文
           build: true
           site_name: AI趋势速递
-          site_description: AI趋势速递 — 从 Reddit 和 Twitter 挖掘主题、痛点和新兴话题。
+          site_description: AI趋势速递 — 从 Reddit、Twitter 和 HackerNews 挖掘主题、痛点和新兴话题。
           copyright: "©2026 GenisisIQ"
           nav_translations:
             AI Pulse Daily: AI趋势速递
             Reddit: Reddit
             Twitter: Twitter
+            HackerNews: HackerNews
             AI: AI
             AI Agent: AI 智能体
             AI Coding: AI 编程
@@ -90,6 +91,9 @@ extra:
     twitter:
       label: Twitter
       icon: ":fontawesome-brands-x-twitter:"
+    hackernews:
+      label: HackerNews
+      icon: ":fontawesome-brands-hacker-news:"
   topics:
     ai:
       label: AI
