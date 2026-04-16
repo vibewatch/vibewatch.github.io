@@ -70,8 +70,7 @@ jobs:
       - name: Copy translations to docs
         if: steps.check-translations.outputs.has_changes == 'true'
         run: |
-          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/twitter/ website/docs/twitter/
-          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/reddit/ website/docs/reddit/
+          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/ website/docs/
 
       - name: Push website changes
         if: steps.check-translations.outputs.has_changes == 'true'
