@@ -1,14 +1,17 @@
-// Newsletter subscription — calls Cloudflare Worker API
+// Newsletter subscription — dialog with Cloudflare Worker API
 (function () {
   const API_URL = "https://newsletter-worker.wlfjck.workers.dev";
 
+  const overlay = document.getElementById("subscribe-overlay");
+  const dialog = document.getElementById("subscribe-dialog");
+  const openBtn = document.getElementById("subscribe-open");
+  const closeBtn = document.getElementById("subscribe-close");
   const form = document.getElementById("newsletter-form");
   const input = document.getElementById("newsletter-email");
   const btn = document.getElementById("newsletter-btn");
   const msg = document.getElementById("newsletter-msg");
-  const bar = document.getElementById("newsletter-bar");
 
-  if (!form) return;
+  if (!form || !overlay) return;
 
   const isZh = document.documentElement.lang === "zh";
   const btnLabel = isZh ? "订阅" : "Subscribe";
@@ -20,12 +23,36 @@
     fallbackError:isZh ? "出了点问题"                      : "Something went wrong",
   };
 
+  // Open / close dialog
+  function openDialog() {
+    overlay.classList.add("is-open");
+    input.focus({ preventScroll: true });
+  }
+  function closeDialog() {
+    overlay.classList.remove("is-open");
+  }
+
+  if (openBtn) openBtn.addEventListener("click", openDialog);
+  if (closeBtn) closeBtn.addEventListener("click", closeDialog);
+
+  // Close on overlay click (not dialog body)
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) closeDialog();
+  });
+
+  // Close on Escape
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("is-open")) closeDialog();
+  });
+
   // Show confirmation message if redirected from confirm link
   const params = new URLSearchParams(window.location.search);
   if (params.get("subscribed") === "confirmed") {
+    openDialog();
     showMsg(i18n.confirmed, "success");
     window.history.replaceState({}, "", window.location.pathname);
   } else if (params.get("subscribed") === "already") {
+    openDialog();
     showMsg(i18n.already, "success");
     window.history.replaceState({}, "", window.location.pathname);
   }
@@ -65,11 +92,11 @@
 
   function showMsg(text, type) {
     msg.textContent = text;
-    msg.className = "newsletter-msg newsletter-msg--" + type;
+    msg.className = "subscribe-dialog__msg subscribe-dialog__msg--" + type;
   }
 
   function hideMsg() {
     msg.textContent = "";
-    msg.className = "newsletter-msg";
+    msg.className = "subscribe-dialog__msg";
   }
 })();

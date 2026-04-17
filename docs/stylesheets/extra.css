@@ -966,124 +966,281 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 
 
 /* ============================================================
-   NEWSLETTER SUBSCRIBE — FOOTER CARD
+   SUBSCRIBE — Header button
    ============================================================ */
 
-.newsletter-footer {
-  margin: 1.5rem auto 1rem;
-  padding: 0.8rem 1.8rem;
-  max-width: 620px;
-  background: var(--md-primary-fg-color);
+/* Title: keep narrow (just enough for site name) so subscribe button
+   sits next to it on the left. Topics inside are position:absolute,
+   so we need an explicit width. */
+.md-header__title {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Make the ellipsis shrink-to-fit so title hugs the text */
+.md-header__title .md-header__ellipsis {
+  width: auto;
+  min-width: 0;
+}
+
+/* Topic is position:absolute by default — make the first (visible) one
+   flow inline so the title collapses to text width */
+.md-header__title .md-header__topic:first-child {
+  position: relative;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  z-index: 0 !important;
+}
+.md-header__title .md-header__topic + .md-header__topic {
+  display: none !important;
+}
+
+/* Push remaining header items (palette, lang, search) to the right edge */
+.md-subscribe-btn {
+  margin-right: auto;
+}
+
+.md-subscribe-btn {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.25em 0.85em;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  margin-left: 0.5rem;
+}
+
+[data-md-color-scheme="default"] .md-subscribe-btn {
+  color: var(--ivory);
+  background: var(--terracotta);
+}
+
+[data-md-color-scheme="default"] .md-subscribe-btn:hover {
+  background: var(--coral);
+  box-shadow: 0 2px 8px rgba(201, 100, 66, 0.25);
+}
+
+[data-md-color-scheme="slate"] .md-subscribe-btn {
   color: #fff;
-  border-radius: 10px;
+  background: var(--coral);
+}
+
+[data-md-color-scheme="slate"] .md-subscribe-btn:hover {
+  background: var(--terracotta);
+  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.3);
+}
+
+/* ============================================================
+   SUBSCRIBE — Centered dialog overlay
+   ============================================================ */
+
+.subscribe-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.subscribe-overlay.is-open {
+  display: flex;
+}
+
+.subscribe-dialog {
+  position: relative;
+  width: 90%;
+  max-width: 440px;
+  border-radius: 14px;
+  padding: 2rem 2rem 1.6rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  animation: dialogIn 0.2s ease;
+  pointer-events: auto;
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog {
+  background: var(--ivory);
+  border: 1px solid var(--border-cream);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog {
+  background: #1c1c1a;
+  border: 1px solid var(--border-dark);
+}
+
+.subscribe-dialog__close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog__close {
+  color: var(--stone-gray);
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog__close:hover {
+  background: var(--warm-sand);
+  color: var(--near-black);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__close {
+  color: var(--warm-silver);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__close:hover {
+  background: var(--dark-surface);
+  color: #e8e6dc;
+}
+
+.subscribe-dialog__title {
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.2rem;
   text-align: center;
 }
 
-.newsletter-form {
+[data-md-color-scheme="default"] .subscribe-dialog__title {
+  color: var(--near-black);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__title {
+  color: #e8e6dc;
+}
+
+.subscribe-dialog__form {
   display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
   align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: center;
+}
+
+.subscribe-dialog__inputs {
+  display: flex;
+  gap: 0.5rem;
   width: 100%;
 }
 
-.newsletter-label {
+.subscribe-dialog__email {
+  flex: 1;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  padding: 0.55em 0.9em;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog__email {
+  background: var(--parchment);
+  border: 1.5px solid var(--border-warm);
+  color: var(--near-black);
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog__email::placeholder {
+  color: var(--stone-gray);
+}
+
+[data-md-color-scheme="default"] .subscribe-dialog__email:focus {
+  border-color: var(--terracotta);
+  box-shadow: 0 0 0 3px rgba(201, 100, 66, 0.12);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__email {
+  background: var(--deep-dark);
+  border: 1.5px solid var(--border-dark);
+  color: #e8e6dc;
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__email::placeholder {
+  color: var(--stone-gray);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__email:focus {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15);
+}
+
+.subscribe-dialog__btn {
+  font-family: var(--sans);
   font-size: 0.88rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  width: 100%;
-  margin-bottom: 0.3rem;
-}
-
-.newsletter-inputs {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.newsletter-email {
-  font-family: var(--sans);
-  font-size: 0.82rem;
-  padding: 0.45em 0.8em;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  outline: none;
-  width: 220px;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.newsletter-email::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.newsletter-email:focus {
-  border-color: #fff;
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.newsletter-btn {
-  font-family: var(--sans);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.45em 1.2em;
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  padding: 0.55em 1.4em;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
   white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
-.newsletter-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: #fff;
+[data-md-color-scheme="default"] .subscribe-dialog__btn {
+  background: var(--terracotta);
+  color: var(--ivory);
 }
 
-.newsletter-btn:disabled {
+[data-md-color-scheme="default"] .subscribe-dialog__btn:hover {
+  background: var(--coral);
+  box-shadow: 0 2px 8px rgba(201, 100, 66, 0.25);
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__btn {
+  background: var(--coral);
+  color: #fff;
+}
+
+[data-md-color-scheme="slate"] .subscribe-dialog__btn:hover {
+  background: var(--terracotta);
+  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.3);
+}
+
+.subscribe-dialog__btn:disabled {
   opacity: 0.6;
   cursor: wait;
 }
 
-.newsletter-msg {
-  font-size: 0.76rem;
+.subscribe-dialog__msg {
+  font-size: 0.82rem;
   font-weight: 500;
-  min-height: 1em;
-  width: 100%;
+  min-height: 1.2em;
+  text-align: center;
 }
 
-.newsletter-msg--success {
-  color: #c4f5c4;
+.subscribe-dialog__msg--success {
+  color: #2e8b57;
 }
 
-.newsletter-msg--error {
-  color: #ffd0c0;
+.subscribe-dialog__msg--error {
+  color: var(--error-crimson);
 }
 
-/* ── Mobile responsive ── */
+[data-md-color-scheme="slate"] .subscribe-dialog__msg--success {
+  color: #6ecf8e;
+}
 
-@media screen and (max-width: 48em) {
-  .newsletter-footer {
-    margin: 1.2rem 0.5rem 0.8rem;
-    padding: 0.7rem 1rem;
-  }
-
-  .newsletter-form {
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .newsletter-inputs {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .newsletter-email {
-    flex: 1;
-    width: auto;
-  }
+[data-md-color-scheme="slate"] .subscribe-dialog__msg--error {
+  color: #ff8a70;
 }
