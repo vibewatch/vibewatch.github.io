@@ -1048,10 +1048,9 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: transparent;
+  background: rgba(20, 20, 19, 0.35);
   align-items: center;
   justify-content: center;
-  pointer-events: none;
 }
 
 .subscribe-overlay.is-open {
@@ -1066,7 +1065,6 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   padding: 2rem 2rem 1.6rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
   animation: dialogIn 0.2s ease;
-  pointer-events: auto;
 }
 
 @keyframes dialogIn {

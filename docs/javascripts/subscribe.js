@@ -23,13 +23,34 @@
     fallbackError:isZh ? "出了点问题"                      : "Something went wrong",
   };
 
+  // Prevent background scroll while dialog is open.
+  // We avoid `overflow:hidden` on <html>/<body> because it breaks
+  // position:sticky used by the sidebars.
+  function preventScroll(e) {
+    // Allow scroll inside the dialog itself
+    if (dialog.contains(e.target)) return;
+    e.preventDefault();
+  }
+  function preventScrollKeys(e) {
+    const keys = ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
+    if (keys.includes(e.key) && !dialog.contains(e.target)) {
+      e.preventDefault();
+    }
+  }
+
   // Open / close dialog
   function openDialog() {
     overlay.classList.add("is-open");
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+    window.addEventListener("keydown", preventScrollKeys, false);
     input.focus({ preventScroll: true });
   }
   function closeDialog() {
     overlay.classList.remove("is-open");
+    window.removeEventListener("wheel", preventScroll, { passive: false });
+    window.removeEventListener("touchmove", preventScroll, { passive: false });
+    window.removeEventListener("keydown", preventScrollKeys, false);
   }
 
   if (openBtn) openBtn.addEventListener("click", openDialog);
