@@ -21,22 +21,30 @@
 
 {% block content %}
   {{ super() }}
-  <div class="newsletter-footer" id="newsletter-bar">
-    <form class="newsletter-form" id="newsletter-form">
-      {% if config.theme.language == "zh" %}
-      <span class="newsletter-label">📬 每日 AI 精选，直达你的收件箱</span>
-      <div class="newsletter-inputs">
-        <input type="email" name="email" placeholder="you@example.com" required class="newsletter-email" id="newsletter-email" autocomplete="email" />
-        <button type="submit" class="newsletter-btn" id="newsletter-btn">订阅</button>
-      </div>
-      {% else %}
-      <span class="newsletter-label">📬 Get daily AI insights in your inbox</span>
-      <div class="newsletter-inputs">
-        <input type="email" name="email" placeholder="you@example.com" required class="newsletter-email" id="newsletter-email" autocomplete="email" />
-        <button type="submit" class="newsletter-btn" id="newsletter-btn">Subscribe</button>
-      </div>
-      {% endif %}
-      <span class="newsletter-msg" id="newsletter-msg"></span>
-    </form>
+{% endblock %}
+
+{% block scripts %}
+  <!-- Subscribe dialog overlay -->
+  <div class="subscribe-overlay" id="subscribe-overlay">
+    <div class="subscribe-dialog" id="subscribe-dialog">
+      <button class="subscribe-dialog__close" id="subscribe-close" aria-label="Close">&times;</button>
+      <form class="subscribe-dialog__form" id="newsletter-form">
+        {% if config.theme.language == "zh" %}
+        <h3 class="subscribe-dialog__title">📬 每日 AI 精选，直达你的收件箱</h3>
+        <div class="subscribe-dialog__inputs">
+          <input type="email" name="email" placeholder="you@example.com" required class="subscribe-dialog__email" id="newsletter-email" autocomplete="email" />
+          <button type="submit" class="subscribe-dialog__btn" id="newsletter-btn">订阅</button>
+        </div>
+        {% else %}
+        <h3 class="subscribe-dialog__title">📬 Get daily AI insights in your inbox</h3>
+        <div class="subscribe-dialog__inputs">
+          <input type="email" name="email" placeholder="you@example.com" required class="subscribe-dialog__email" id="newsletter-email" autocomplete="email" />
+          <button type="submit" class="subscribe-dialog__btn" id="newsletter-btn">Subscribe</button>
+        </div>
+        {% endif %}
+        <span class="subscribe-dialog__msg" id="newsletter-msg"></span>
+      </form>
+    </div>
   </div>
+  {{ super() }}
 {% endblock %}
