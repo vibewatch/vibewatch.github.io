@@ -71,11 +71,9 @@ def define_env(env):
             is_zh = env.page.file.src_path.endswith(".zh.md")
 
         results = []
-        for source_dir in sorted(docs_dir.iterdir()):
-            if not source_dir.is_dir() or source_dir.name.startswith((".", "_")):
-                continue
-            source_name = source_dir.name
-            if source_name in _SKIP_DIRS or source_name not in sources_meta:
+        for source_name in sources_meta:
+            source_dir = docs_dir / source_name
+            if not source_dir.is_dir():
                 continue
 
             for topic_dir in sorted(source_dir.iterdir()):
@@ -102,6 +100,37 @@ def define_env(env):
                     }
                 )
         return results
+
+    @env.macro
+    def list_topics_grouped_by_source(limit: int = 7) -> list[dict]:
+        """Return topics grouped by source.
+
+        Each dict has: source, source_label, source_icon, topics (list).
+        Each topic dict has: topic, topic_label, description, reports.
+        """
+        all_topics = list_all_topics(limit)
+        from collections import OrderedDict
+
+        groups: OrderedDict[str, dict] = OrderedDict()
+        for t in all_topics:
+            key = t["source"]
+            if key not in groups:
+                groups[key] = {
+                    "source": t["source"],
+                    "source_label": t["source_label"],
+                    "source_icon": t["source_icon"],
+                    "topics": [],
+                }
+            groups[key]["topics"].append(
+                {
+                    "topic": t["topic"],
+                    "topic_label": t["topic_label"],
+                    "description": t["description"],
+                    "reports": t["reports"],
+                    "source": t["source"],
+                }
+            )
+        return list(groups.values())
 
     @env.macro
     def report_calendar(source: str, topic: str) -> str:

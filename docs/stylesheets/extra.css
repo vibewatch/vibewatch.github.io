@@ -688,6 +688,10 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
    HOMEPAGE — Grid cards (editorial panels)
    ============================================================ */
 
+.md-typeset .grid.cards {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
 .md-typeset .grid.cards > :is(ul, ol) > li,
 .md-typeset .grid.cards > .result {
   background: var(--md-default-bg-color--light);

@@ -85,12 +85,12 @@ extra:
     provider: google
     property: G-B3FDBWD72F
   sources:
-    reddit:
-      label: Reddit
-      icon: ":material-reddit:"
     twitter:
       label: Twitter
       icon: ":fontawesome-brands-x-twitter:"
+    reddit:
+      label: Reddit
+      icon: ":material-reddit:"
     hackernews:
       label: HackerNews
       icon: ":fontawesome-brands-hacker-news:"
