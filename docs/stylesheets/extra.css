@@ -638,34 +638,6 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 }
 
 /* ============================================================
-   SEARCH
-   ============================================================ */
-
-[data-md-color-scheme="default"] .md-search__form {
-  background: var(--parchment);
-  border: 1px solid var(--border-warm);
-  border-radius: 8px;
-}
-
-[data-md-color-scheme="default"] .md-search__input {
-  color: var(--near-black);
-}
-
-[data-md-color-scheme="default"] .md-search__input::placeholder {
-  color: var(--stone-gray);
-}
-
-[data-md-color-scheme="slate"] .md-search__form {
-  background: #1c1c1a;
-  border: 1px solid rgba(176, 174, 165, 0.13);
-  border-radius: 8px;
-}
-
-.md-search__form:is(:focus-within) {
-  border-color: var(--focus-blue) !important;
-}
-
-/* ============================================================
    HOMEPAGE — Hero tagline
    ============================================================ */
 
@@ -1241,4 +1213,127 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 
 [data-md-color-scheme="slate"] .subscribe-dialog__msg--error {
   color: #ff8a70;
+}
+
+/* ============================================================
+   PAGEFIND — Search trigger + overlay + UI theming
+   ============================================================ */
+
+/* Header trigger button (material icon button) */
+.md-pagefind-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md-pagefind-trigger svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: currentColor;
+}
+
+/* Modal overlay */
+.pagefind-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(20, 20, 19, 0.45);
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8vh;
+}
+
+.pagefind-overlay.is-open {
+  display: flex;
+}
+
+.pagefind-modal {
+  position: relative;
+  width: 92%;
+  max-width: 680px;
+  max-height: 80vh;
+  border-radius: 14px;
+  padding: 2.4rem 1.4rem 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialogIn 0.2s ease;
+}
+
+[data-md-color-scheme="default"] .pagefind-modal {
+  background: var(--ivory);
+  border: 1px solid var(--border-cream);
+}
+
+[data-md-color-scheme="slate"] .pagefind-modal {
+  background: #1c1c1a;
+  border: 1px solid var(--border-dark);
+}
+
+.pagefind-modal__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  z-index: 2;
+}
+
+[data-md-color-scheme="default"] .pagefind-modal__close {
+  color: var(--stone-gray);
+}
+[data-md-color-scheme="default"] .pagefind-modal__close:hover {
+  background: var(--warm-sand);
+  color: var(--near-black);
+}
+[data-md-color-scheme="slate"] .pagefind-modal__close {
+  color: var(--warm-silver);
+}
+[data-md-color-scheme="slate"] .pagefind-modal__close:hover {
+  background: var(--dark-surface);
+  color: #e8e6dc;
+}
+
+#pagefind-search {
+  overflow-y: auto;
+  max-height: calc(80vh - 2rem);
+}
+
+/* Pagefind UI CSS variable overrides — light */
+[data-md-color-scheme="default"] .pagefind-ui {
+  --pagefind-ui-primary: var(--terracotta);
+  --pagefind-ui-text: var(--near-black);
+  --pagefind-ui-background: var(--ivory);
+  --pagefind-ui-border: var(--border-warm);
+  --pagefind-ui-tag: var(--warm-sand);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 8px;
+  --pagefind-ui-font: var(--sans);
+}
+
+/* Pagefind UI CSS variable overrides — dark */
+[data-md-color-scheme="slate"] .pagefind-ui {
+  --pagefind-ui-primary: var(--coral);
+  --pagefind-ui-text: #e8e6dc;
+  --pagefind-ui-background: #1c1c1a;
+  --pagefind-ui-border: var(--border-dark);
+  --pagefind-ui-tag: var(--dark-surface);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 8px;
+  --pagefind-ui-font: var(--sans);
 }

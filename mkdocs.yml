@@ -27,17 +27,18 @@ theme:
     - navigation.sections
     - navigation.indexes
     - navigation.top
-    - search.suggest
-    - search.highlight
     - toc.follow
     - content.tooltips
 
 extra_css:
   - stylesheets/extra.css
+  - pagefind/pagefind-ui.css
 
 extra_javascript:
   - javascripts/external-links.js
   - javascripts/subscribe.js
+  - pagefind/pagefind-ui.js
+  - javascripts/pagefind-init.js
 
 markdown_extensions:
   - attr_list
@@ -53,12 +54,10 @@ markdown_extensions:
       anchor_linenums: true
 
 plugins:
-  - search
   - awesome-pages
   - i18n:
       docs_structure: suffix
       reconfigure_material: true
-      reconfigure_search: true
       languages:
         - locale: en
           name: English
@@ -111,3 +110,4 @@ extra:
 hooks:
   - hooks/title.py
   - hooks/nav_prune.py
+  - hooks/pagefind_index.py

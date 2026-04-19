@@ -25,7 +25,7 @@
 
 {% block scripts %}
   <!-- Subscribe dialog overlay -->
-  <div class="subscribe-overlay" id="subscribe-overlay">
+  <div class="subscribe-overlay" id="subscribe-overlay" data-pagefind-ignore>
     <div class="subscribe-dialog" id="subscribe-dialog">
       <button class="subscribe-dialog__close" id="subscribe-close" aria-label="Close">&times;</button>
       <form class="subscribe-dialog__form" id="newsletter-form">
@@ -44,6 +44,14 @@
         {% endif %}
         <span class="subscribe-dialog__msg" id="newsletter-msg"></span>
       </form>
+    </div>
+  </div>
+
+  <!-- Pagefind search overlay -->
+  <div class="pagefind-overlay" id="pagefind-overlay" data-pagefind-ignore>
+    <div class="pagefind-modal">
+      <button class="pagefind-modal__close" id="pagefind-close" aria-label="Close">&times;</button>
+      <div id="pagefind-search"></div>
     </div>
   </div>
   {{ super() }}
