@@ -74,6 +74,7 @@ plugins:
             Reddit: Reddit
             Twitter: Twitter
             HackerNews: HackerNews
+            YouTube: YouTube
             AI: AI
             AI Agent: AI 智能体
             AI Coding: AI 编程
@@ -93,6 +94,9 @@ extra:
     hackernews:
       label: HackerNews
       icon: ":fontawesome-brands-hacker-news:"
+    youtube:
+      label: YouTube
+      icon: ":fontawesome-brands-youtube:"
   topics:
     ai:
       label: AI

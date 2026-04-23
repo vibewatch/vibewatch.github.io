@@ -57,7 +57,7 @@ jobs:
         id: detect
         run: |
           # Find newly added .md report files (not .zh.md translations)
-          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'docs/reddit/**/*.md' 'docs/twitter/**/*.md' | grep -v '\.zh\.md$' || true)
+          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD -- 'docs/reddit/**/*.md' 'docs/twitter/**/*.md' 'docs/hackernews/**/*.md' 'docs/youtube/**/*.md' | grep -v '\.zh\.md$' || true)
           if [ -z "$NEW_FILES" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No new report files detected."
