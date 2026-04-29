@@ -53,12 +53,28 @@ jobs:
         if: steps.check-reports.outputs.has_changes == 'true'
         working-directory: harvester
         run: |
+          push_with_rebase_retry() {
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                return 0
+              fi
+              echo "Push failed on attempt ${attempt}; retrying after rebasing latest origin/main..."
+            done
+            echo "Unable to push after 5 attempts."
+            return 1
+          }
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add 'reports/hackernews/**/*.md'
-          git commit -m "Add hackernews reports for $(date -u +%Y-%m-%d)"
-          git pull --rebase
-          git push
+          if git diff --cached --quiet; then
+            echo "No staged reports to commit; changes may already be committed."
+          else
+            git commit -m "Add hackernews reports for $(date -u +%Y-%m-%d)"
+          fi
+          push_with_rebase_retry
 
       - name: Checkout website
         if: steps.check-reports.outputs.has_changes == 'true'
@@ -83,6 +99,18 @@ jobs:
             echo "No new docs to push"
           else
             git commit -m "Update hackernews reports for $(date -u +%Y-%m-%d)"
-            git pull --rebase
-            git push
+            push_with_rebase_retry() {
+              for attempt in 1 2 3 4 5; do
+                git fetch origin main
+                git rebase origin/main
+                if git push origin HEAD:main; then
+                  return 0
+                fi
+                echo "Push failed on attempt ${attempt}; retrying after rebasing latest origin/main..."
+              done
+              echo "Unable to push after 5 attempts."
+              return 1
+            }
+
+            push_with_rebase_retry
           fi
