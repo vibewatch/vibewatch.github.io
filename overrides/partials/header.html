@@ -38,6 +38,9 @@
     <button class="md-header__button md-subscribe-btn" id="subscribe-open" aria-label="Subscribe">
       {% if config.theme.language == "zh" %}订阅{% else %}Subscribe{% endif %}
     </button>
+    <a class="md-header__button md-rss-link" href="{% if config.theme.language == 'zh' %}{{ 'zh/feed.xml' | url }}{% else %}{{ 'feed.xml' | url }}{% endif %}" aria-label="RSS feed" title="RSS feed" rel="alternate" type="application/rss+xml">
+      RSS
+    </a>
     {% if config.theme.palette %}
       {% if not config.theme.palette is mapping %}
         {% include "partials/palette.html" %}
