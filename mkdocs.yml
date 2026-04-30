@@ -113,5 +113,6 @@ extra:
 
 hooks:
   - hooks/title.py
+  - hooks/rss.py
   - hooks/nav_prune.py
   - hooks/pagefind_index.py

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block extrahead %}
+  <link rel="alternate" type="application/rss+xml" title="{% if config.theme.language == 'zh' %}AI趋势速递 RSS{% else %}AI Pulse Daily RSS{% endif %}" href="{% if config.theme.language == 'zh' %}{{ 'zh/feed.xml' | url }}{% else %}{{ 'feed.xml' | url }}{% endif %}">
   {% if page %}
     {% if page.canonical_url %}
     <meta property="og:url" content="{{ page.canonical_url }}">
