@@ -36,6 +36,7 @@ extra_css:
 
 extra_javascript:
   - javascripts/external-links.js
+  - javascripts/twitter-metrics.js
   - javascripts/subscribe.js
   - pagefind/pagefind-ui.js
   - javascripts/pagefind-init.js

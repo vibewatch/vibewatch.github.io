@@ -936,6 +936,105 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   color: inherit !important;
 }
 
+/* ============================================================
+   TWITTER REPORTS — Collapse noisy engagement metrics
+   ============================================================ */
+
+.twitter-metrics-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: -0.35rem 0 1.2rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  background: var(--md-default-bg-color--light);
+  color: var(--md-default-fg-color--light);
+  font-size: 0.76rem;
+}
+
+.twitter-metrics-toolbar__hint {
+  line-height: 1.45;
+}
+
+.twitter-metrics-toolbar__button,
+.md-typeset .twitter-metrics {
+  font-family: var(--sans);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 999px;
+  background: var(--md-default-bg-color--lighter);
+  color: var(--md-default-fg-color--lighter);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.twitter-metrics-toolbar__button {
+  padding: 0.25em 0.75em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.md-typeset .twitter-metrics {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: 0.02em;
+  margin: 0 0.12em;
+  padding: 0;
+  width: 1.35em;
+  height: 1.35em;
+  font-size: 0.78em;
+  font-weight: 650;
+  line-height: 1;
+  opacity: 0.62;
+}
+
+.md-typeset .twitter-metrics__icon {
+  display: block;
+  width: 0.86em;
+  height: 0.86em;
+  flex: 0 0 auto;
+}
+
+.twitter-metrics-toolbar__button:hover,
+.twitter-metrics-toolbar__button:focus-visible,
+.md-typeset .twitter-metrics:hover,
+.md-typeset .twitter-metrics:focus-visible,
+.md-typeset .twitter-metrics.is-expanded {
+  color: var(--md-accent-fg-color);
+  border-color: var(--md-accent-fg-color);
+  background: var(--md-accent-fg-color--transparent);
+  opacity: 1;
+  outline: none;
+}
+
+.md-typeset .twitter-metrics__details {
+  display: none;
+}
+
+.md-typeset .twitter-metrics.is-expanded,
+html.twitter-metrics-visible .md-typeset .twitter-metrics {
+  width: auto;
+  height: auto;
+  padding: 0.05em 0.42em;
+  font-size: 0.72em;
+  line-height: 1.35;
+  opacity: 0.82;
+}
+
+.md-typeset .twitter-metrics.is-expanded .twitter-metrics__icon,
+html.twitter-metrics-visible .md-typeset .twitter-metrics__icon {
+  display: none;
+}
+
+.md-typeset .twitter-metrics.is-expanded .twitter-metrics__details,
+html.twitter-metrics-visible .md-typeset .twitter-metrics__details {
+  display: inline;
+}
+
 
 /* ============================================================
    SUBSCRIBE — Header button
