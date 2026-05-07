@@ -937,10 +937,10 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
 }
 
 /* ============================================================
-   TWITTER REPORTS — Collapse noisy engagement metrics
+    SOCIAL REPORTS — Collapse noisy engagement metrics
    ============================================================ */
 
-.twitter-metrics-toolbar {
+.engagement-metrics-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -955,12 +955,12 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   font-size: 0.76rem;
 }
 
-.twitter-metrics-toolbar__hint {
+.engagement-metrics-toolbar__hint {
   line-height: 1.45;
 }
 
-.twitter-metrics-toolbar__button,
-.md-typeset .twitter-metrics {
+.engagement-metrics-toolbar__button,
+.md-typeset .engagement-metrics {
   font-family: var(--sans);
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 999px;
@@ -970,14 +970,14 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
-.twitter-metrics-toolbar__button {
+.engagement-metrics-toolbar__button {
   padding: 0.25em 0.75em;
   font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.md-typeset .twitter-metrics {
+.md-typeset .engagement-metrics {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -992,18 +992,18 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   opacity: 0.62;
 }
 
-.md-typeset .twitter-metrics__icon {
+.md-typeset .engagement-metrics__icon {
   display: block;
   width: 0.86em;
   height: 0.86em;
   flex: 0 0 auto;
 }
 
-.twitter-metrics-toolbar__button:hover,
-.twitter-metrics-toolbar__button:focus-visible,
-.md-typeset .twitter-metrics:hover,
-.md-typeset .twitter-metrics:focus-visible,
-.md-typeset .twitter-metrics.is-expanded {
+.engagement-metrics-toolbar__button:hover,
+.engagement-metrics-toolbar__button:focus-visible,
+.md-typeset .engagement-metrics:hover,
+.md-typeset .engagement-metrics:focus-visible,
+.md-typeset .engagement-metrics.is-expanded {
   color: var(--md-accent-fg-color);
   border-color: var(--md-accent-fg-color);
   background: var(--md-accent-fg-color--transparent);
@@ -1011,12 +1011,12 @@ html [data-md-color-scheme="default"] .md-footer-meta.md-typeset a {
   outline: none;
 }
 
-.md-typeset .twitter-metrics__details {
+.md-typeset .engagement-metrics__details {
   display: none;
 }
 
-.md-typeset .twitter-metrics.is-expanded,
-html.twitter-metrics-visible .md-typeset .twitter-metrics {
+.md-typeset .engagement-metrics.is-expanded,
+html.engagement-metrics-visible .md-typeset .engagement-metrics {
   width: auto;
   height: auto;
   padding: 0.05em 0.42em;
@@ -1025,13 +1025,13 @@ html.twitter-metrics-visible .md-typeset .twitter-metrics {
   opacity: 0.82;
 }
 
-.md-typeset .twitter-metrics.is-expanded .twitter-metrics__icon,
-html.twitter-metrics-visible .md-typeset .twitter-metrics__icon {
+.md-typeset .engagement-metrics.is-expanded .engagement-metrics__icon,
+html.engagement-metrics-visible .md-typeset .engagement-metrics__icon {
   display: none;
 }
 
-.md-typeset .twitter-metrics.is-expanded .twitter-metrics__details,
-html.twitter-metrics-visible .md-typeset .twitter-metrics__details {
+.md-typeset .engagement-metrics.is-expanded .engagement-metrics__details,
+html.engagement-metrics-visible .md-typeset .engagement-metrics__details {
   display: inline;
 }
 
