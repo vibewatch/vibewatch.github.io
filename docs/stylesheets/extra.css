@@ -247,6 +247,17 @@ html { font-size: 106.25%; }
   font-size: 1.06rem;
 }
 
+.md-header__title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.md-header__title-link:hover,
+.md-header__title-link:focus-visible {
+  color: inherit;
+  text-decoration: none;
+}
+
 [data-md-color-scheme="default"] .md-tabs {
   background: var(--ivory);
   border-bottom: 1px solid var(--border-cream);

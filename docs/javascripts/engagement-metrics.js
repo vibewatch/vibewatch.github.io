@@ -1,6 +1,6 @@
 // Social report readability — collapse inline engagement metrics by default.
 (function () {
-  const METRIC_TRIGGER = String.raw`[0-9０-９][0-9０-９,，.Kk万+]*\s*(?:score|upvotes?|votes?|points?|comments?|likes?|replies|bookmarks?|views?|retweets?|reposts?|quotes?|点赞|个赞|次点赞|赞同|赞成|回复|条回复|收藏数?|次收藏|个收藏|书签|个书签|浏览量|次浏览|观看量|次观看|转发|次转发|引用|次引用|评论|条评论|得分|分(?!钟))`;
+  const METRIC_TRIGGER = String.raw`[0-9０-９][0-9０-９,，.Kk万+]*\s*(?:score|upvotes?|votes?|points?|comments?|likes?|replies|bookmarks?|views?|retweets?|reposts?|quotes?|点赞|个赞|次点赞|赞同|赞成|回复|条回复|收藏数?|次收藏|个收藏|书签|个书签|浏览量|次浏览|观看量|次观看|转发|次转发|引用|次引用|评论|条评论|得分|积分|分(?!钟|\s*[0-9０-９]+\s*秒|\s*秒))`;
   const LEADING_SCORE_TRIGGER = String.raw`\s*(?:\bscore\b\s*[:：]?\s*[0-9０-９]|得分\s*[0-9０-９])`;
   const METRIC_PATTERN = new RegExp(
     String.raw`(?:\((?=(?:${LEADING_SCORE_TRIGGER}|[^)]*${METRIC_TRIGGER}))[^()]{1,180}\)|（(?=(?:${LEADING_SCORE_TRIGGER}|[^）]*${METRIC_TRIGGER}))[^（）]{1,180}）|\[(?=(?:${LEADING_SCORE_TRIGGER}|[^\]]*${METRIC_TRIGGER}))[^\[\]]{1,100}\])`,
@@ -24,6 +24,7 @@
   function getReportSource() {
     if (location.pathname.includes("/twitter/")) return "twitter";
     if (location.pathname.includes("/reddit/")) return "reddit";
+    if (location.pathname.includes("/hackernews/")) return "hackernews";
     return "";
   }
 
@@ -83,6 +84,12 @@
   }
 
   function metricAriaLabel(metricText, langZh, source) {
+    if (source === "hackernews") {
+      return langZh
+        ? "显示 Hacker News 互动数据：" + metricText
+        : "Show Hacker News engagement metrics: " + metricText;
+    }
+
     if (source === "reddit") {
       return langZh
         ? "显示 Reddit 互动数据：" + metricText
@@ -164,6 +171,12 @@
   }
 
   function toolbarButtonText(visible, count, langZh, source) {
+    if (source === "hackernews") {
+      return visible
+        ? (langZh ? "隐藏 Hacker News 数据" : "Hide Hacker News stats")
+        : (langZh ? "显示 Hacker News 数据" : "Show Hacker News stats") + " (" + count + ")";
+    }
+
     if (source === "reddit") {
       return visible
         ? (langZh ? "隐藏 Reddit 数据" : "Hide Reddit stats")
@@ -176,6 +189,12 @@
   }
 
   function toolbarHintText(langZh, source) {
+    if (source === "hackernews") {
+      return langZh
+        ? "已自动收起 Hacker News 互动数据，减少阅读噪音。"
+        : "Hacker News engagement metrics are collapsed to reduce reading noise.";
+    }
+
     if (source === "reddit") {
       return langZh
         ? "已自动收起 Reddit 互动数据，减少阅读噪音。"
