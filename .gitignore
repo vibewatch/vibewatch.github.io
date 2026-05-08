@@ -2,3 +2,4 @@
 __pycache__/
 site/
 payload.json
+cloudflare/.wrangler/

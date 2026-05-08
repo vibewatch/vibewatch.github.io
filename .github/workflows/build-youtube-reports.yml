@@ -1,9 +1,9 @@
 name: Build YouTube reports
 
 on:
+  # schedule: # Disabled: Cloudflare Worker handles scheduling
+  #   - cron: '30 1 * * *'
   workflow_dispatch:
-  schedule:
-    - cron: '30 1 * * *'
 
 permissions:
   contents: read

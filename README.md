@@ -56,12 +56,26 @@ Create a new date-named Markdown file under `docs/<source>/<topic>/` (e.g., `doc
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
 | `deploy-site.yml` | Push to `main` (docs/config changes) | Builds the MkDocs site, deploys it to GitHub Pages, and notifies subscribers when new report files are added. |
-| `build-reddit-reports.yml` | Scheduled / manual | Generates daily Reddit analysis reports and syncs them into `docs/reddit/`. |
-| `build-twitter-reports.yml` | Scheduled / manual | Generates daily Twitter analysis reports and syncs them into `docs/twitter/`. |
-| `build-hackernews-reports.yml` | Scheduled / manual | Generates daily HackerNews analysis reports and syncs them into `docs/hackernews/`. |
-| `build-youtube-reports.yml` | Scheduled / manual | Generates daily YouTube analysis reports and syncs them into `docs/youtube/`. |
+| `build-reddit-reports.yml` | Cloudflare / manual | Generates daily Reddit analysis reports and syncs them into `docs/reddit/`. |
+| `build-twitter-reports.yml` | Cloudflare / manual | Generates daily Twitter analysis reports and syncs them into `docs/twitter/`. |
+| `build-hackernews-reports.yml` | Cloudflare / manual | Generates daily HackerNews analysis reports and syncs them into `docs/hackernews/`. |
+| `build-youtube-reports.yml` | Cloudflare / manual | Generates daily YouTube analysis reports and syncs them into `docs/youtube/`. |
 | `build-source-reports-reusable.yml` | Reusable workflow | Shared implementation for English source report generation and website sync. Excludes `.zh.md` translations. |
-| `translate-reports-to-chinese.yml` | Scheduled / manual | Translates English reports into Chinese (`.zh.md`) and syncs them into `docs/`. |
+| `translate-reports-to-chinese.yml` | Cloudflare / manual | Translates English reports into Chinese (`.zh.md`) and syncs them into `docs/`. |
+
+### Cloudflare Scheduler
+
+The `cloudflare/` Worker owns the cron schedule and dispatches the report workflows through the GitHub Actions API. Native GitHub Actions `schedule` triggers are left commented in the workflow files as references, while `workflow_dispatch` remains the execution entrypoint.
+
+From `cloudflare/`, deploy it with Wrangler:
+
+```bash
+npx wrangler secret put GITHUB_TOKEN
+npx wrangler secret put GITHUB_REPO
+npx wrangler deploy
+```
+
+Use a fine-grained GitHub PAT with **Actions: Read & Write** access on `vibewatch/vibewatch.github.io`. Set `GITHUB_REPO` to `vibewatch/vibewatch.github.io`. `GITHUB_REF` is optional and defaults to `main`.
 
 ### Report Generation Pipeline
 

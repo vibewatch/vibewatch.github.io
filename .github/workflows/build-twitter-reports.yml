@@ -1,9 +1,9 @@
 name: Build Twitter reports
 
 on:
+  # schedule: # Disabled: Cloudflare Worker handles scheduling
+  #   - cron: '0 3 * * *'
   workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'
 
 permissions:
   contents: read

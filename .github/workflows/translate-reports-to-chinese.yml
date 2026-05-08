@@ -1,9 +1,9 @@
 name: Translate reports to Chinese
 
 on:
+  # schedule: # Disabled: Cloudflare Worker handles scheduling
+  #   - cron: '0 4 * * *'
   workflow_dispatch:
-  schedule:
-    - cron: '0 4 * * *'
 
 permissions:
   contents: read
