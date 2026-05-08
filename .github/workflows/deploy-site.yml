@@ -1,4 +1,4 @@
-name: Deploy docs
+name: Deploy AI Pulse Daily site
 
 on:
   push:
@@ -11,49 +11,64 @@ on:
       - 'overrides/**'
       - 'pyproject.toml'
       - 'uv.lock'
-      - '.github/workflows/gh-pages.yml'
+      - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-site:
+    name: Build MkDocs site
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v8.0.0
-      - run: uv sync
-      - run: uv run mkdocs build
-      - uses: actions/upload-pages-artifact@v5.0.0
+      - name: Checkout website repository
+        uses: actions/checkout@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.0.0
+      - name: Install Python dependencies
+        run: uv sync --locked
+      - name: Build MkDocs site
+        # run: uv run mkdocs build --strict
+        run: uv run mkdocs build
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: site/
 
-  deploy:
-    needs: build
+  deploy-site:
+    name: Deploy site to GitHub Pages
+    needs: build-site
+    permissions:
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy GitHub Pages site
+        id: deployment
         uses: actions/deploy-pages@v5
 
-  notify:
-    needs: deploy
+  notify-subscribers:
+    name: Notify subscribers about new reports
+    needs: deploy-site
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout website repository for diff
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
-      - name: Detect new report files
+      - name: Detect newly added report files
         id: detect
         run: |
           # Find newly added .md report files (not .zh.md translations)
@@ -90,19 +105,28 @@ jobs:
             echo "$BODY" >> "$GITHUB_OUTPUT"
             echo "EOF" >> "$GITHUB_OUTPUT"
           fi
-      - name: Send newsletter notification
+      - name: Check newsletter configuration
+        id: newsletter-config
         if: steps.detect.outputs.skip != 'true'
+        env:
+          NEWSLETTER_WORKER_URL: ${{ secrets.NEWSLETTER_WORKER_URL }}
+          NEWSLETTER_SEND_KEY: ${{ secrets.NEWSLETTER_SEND_KEY }}
+        run: |
+          if [ -z "$NEWSLETTER_WORKER_URL" ] || [ -z "$NEWSLETTER_SEND_KEY" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Newsletter secrets are not configured; skipping subscriber notification."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send newsletter notification to subscribers
+        if: steps.detect.outputs.skip != 'true' && steps.newsletter-config.outputs.configured == 'true'
+        continue-on-error: true
         env:
           NEWSLETTER_WORKER_URL: ${{ secrets.NEWSLETTER_WORKER_URL }}
           NEWSLETTER_SEND_KEY: ${{ secrets.NEWSLETTER_SEND_KEY }}
           NEWSLETTER_SUBJECT: ${{ steps.detect.outputs.subject }}
           NEWSLETTER_HTML_BODY: ${{ steps.detect.outputs.body }}
         run: |
-          if [ -z "$NEWSLETTER_WORKER_URL" ]; then
-            echo "NEWSLETTER_WORKER_URL is not configured."
-            exit 1
-          fi
-
           WORKER_URL="${NEWSLETTER_WORKER_URL%/}"
           if ! printf '%s\n' "$WORKER_URL" | grep -Eq '^https?://'; then
             WORKER_URL="https://$WORKER_URL"

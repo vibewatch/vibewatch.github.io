@@ -1,0 +1,25 @@
+name: Build Twitter reports
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  build-twitter-reports:
+    name: Generate Twitter reports and sync website
+    uses: ./.github/workflows/build-source-reports-reusable.yml
+    with:
+      source_key: twitter
+      source_label: Twitter
+    secrets:
+      HARVESTER_PAT: ${{ secrets.HARVESTER_PAT }}
+      COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
+      WEBSITE_PAT: ${{ secrets.WEBSITE_PAT }}

@@ -55,29 +55,34 @@ Create a new date-named Markdown file under `docs/<source>/<topic>/` (e.g., `doc
 
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
-| `gh-pages.yml` | Push to `main` (docs/config changes) | Builds the site with MkDocs and deploys to GitHub Pages. Sends a newsletter notification when new report files are added. |
-| `reddit-reports.yml` | Scheduled / manual | Generates daily Reddit analysis reports. |
-| `twitter-reports.yml` | Scheduled / manual | Generates daily Twitter analysis reports. |
-| `hackernews-reports.yml` | Scheduled / manual | Generates daily HackerNews analysis reports. |
-| `youtube-reports.yml` | Scheduled / manual | Generates daily YouTube analysis reports. |
-| `translate-reports.yml` | Scheduled / manual | Translates English reports into Chinese (`.zh.md`). |
+| `deploy-site.yml` | Push to `main` (docs/config changes) | Builds the MkDocs site, deploys it to GitHub Pages, and notifies subscribers when new report files are added. |
+| `build-reddit-reports.yml` | Scheduled / manual | Generates daily Reddit analysis reports and syncs them into `docs/reddit/`. |
+| `build-twitter-reports.yml` | Scheduled / manual | Generates daily Twitter analysis reports and syncs them into `docs/twitter/`. |
+| `build-hackernews-reports.yml` | Scheduled / manual | Generates daily HackerNews analysis reports and syncs them into `docs/hackernews/`. |
+| `build-youtube-reports.yml` | Scheduled / manual | Generates daily YouTube analysis reports and syncs them into `docs/youtube/`. |
+| `build-source-reports-reusable.yml` | Reusable workflow | Shared implementation for English source report generation and website sync. Excludes `.zh.md` translations. |
+| `translate-reports-to-chinese.yml` | Scheduled / manual | Translates English reports into Chinese (`.zh.md`) and syncs them into `docs/`. |
 
 ### Report Generation Pipeline
 
-The report workflows (`reddit-reports`, `twitter-reports`, `hackernews-reports`, `youtube-reports`, `translate-reports`) follow the same pattern:
+The English source workflows (`build-reddit-reports`, `build-twitter-reports`, `build-hackernews-reports`, `build-youtube-reports`) call `build-source-reports-reusable.yml` with source-specific inputs. The shared workflow follows this pattern:
 
 1. Fetch raw JSON data collected from the source platform.
 2. Generate or translate Markdown reports using **Copilot CLI**.
-3. Copy the new Markdown files into this repo's `docs/` directory.
-4. Push to `main`, which triggers the `gh-pages.yml` deploy workflow.
+3. Copy the new English Markdown files into this repo's `docs/` directory, excluding `.zh.md` translations.
+4. Push to `main`, which triggers the `deploy-site.yml` deploy workflow.
+
+The `translate-reports-to-chinese.yml` workflow handles `.zh.md` translations separately.
 
 ### Newsletter Notification
 
-The `notify` job in `gh-pages.yml` runs after deployment on push events:
+The `notify-subscribers` job in `deploy-site.yml` runs after deployment on push events:
 
 1. Compares `HEAD~1..HEAD` to detect **newly added** English report files (excludes `.zh.md` translations).
 2. Builds an HTML email with links to each new report on `genisisiq.com`.
 3. Sends the email to subscribers via a newsletter worker API.
+
+Newsletter delivery is optional: the job skips sending when newsletter secrets are missing, and notification delivery errors do not fail the site deployment.
 
 ## Development
 

@@ -1,56 +1,61 @@
-name: Build hackernews reports
+name: Translate reports to Chinese
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '0 4 * * *'
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 env:
   HARVESTER_REPO: vibewatch/harvester
 
 jobs:
-  build-reports:
+  translate:
+    name: Translate reports to Chinese and sync website
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout harvester
+      - name: Checkout harvester repository
         uses: actions/checkout@v6
         with:
           repository: ${{ env.HARVESTER_REPO }}
           token: ${{ secrets.HARVESTER_PAT }}
           path: harvester
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js for Copilot CLI
+        uses: actions/setup-node@v6
 
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Run Copilot CLI
+      - name: Generate Chinese markdown translations
         working-directory: harvester
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate markdown trend reports for HackerNews JSON files in data/hackernews/ missing counterparts, dated before today. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Translate English markdown reports in reports/ lacking Chinese versions. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
 
-      - name: Check for new reports
-        id: check-reports
+      - name: Detect new Chinese translations
+        id: check-translations
         working-directory: harvester
         run: |
-          # Detect uncommitted .md files (normal case)
-          UNSTAGED=$(git status --porcelain reports/hackernews/ | grep '\.md$' || true)
-          # Detect .md files already committed by Copilot CLI (fallback)
-          COMMITTED=$(git log origin/main..HEAD --name-only --diff-filter=A 2>/dev/null | grep '^reports/hackernews/.*\.md$' || true)
+          # Detect uncommitted .zh.md files (normal case)
+          UNSTAGED=$(git status --porcelain reports/ | grep '\.zh\.md$' || true)
+          # Detect .zh.md files already committed by Copilot CLI (fallback)
+          COMMITTED=$(git log origin/main..HEAD --name-only --diff-filter=A 2>/dev/null | grep '\.zh\.md$' || true)
           if [ -n "$UNSTAGED" ] || [ -n "$COMMITTED" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Push harvester changes
-        if: steps.check-reports.outputs.has_changes == 'true'
+      - name: Commit and push Chinese translations to harvester
+        if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: harvester
         run: |
           push_with_rebase_retry() {
@@ -68,37 +73,37 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'reports/hackernews/**/*.md'
+          git add 'reports/**/*.zh.md'
           if git diff --cached --quiet; then
-            echo "No staged reports to commit; changes may already be committed."
+            echo "No staged translations to commit; changes may already be committed."
           else
-            git commit -m "Add hackernews reports for $(date -u +%Y-%m-%d)"
+            git commit -m "Add Chinese translations for $(date -u +%Y-%m-%d)"
           fi
           push_with_rebase_retry
 
-      - name: Checkout website
-        if: steps.check-reports.outputs.has_changes == 'true'
+      - name: Checkout website repository
+        if: steps.check-translations.outputs.has_changes == 'true'
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.WEBSITE_PAT }}
           path: website
 
-      - name: Copy reports to docs
-        if: steps.check-reports.outputs.has_changes == 'true'
+      - name: Copy Chinese translations into website docs
+        if: steps.check-translations.outputs.has_changes == 'true'
         run: |
-          rsync -av --include='*/' --include='*.md' --exclude='*' harvester/reports/hackernews/ website/docs/hackernews/
+          rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/ website/docs/
 
-      - name: Push website changes
-        if: steps.check-reports.outputs.has_changes == 'true'
+      - name: Commit and push Chinese docs to website
+        if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: website
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/hackernews/
+          git add docs/
           if git diff --cached --quiet; then
-            echo "No new docs to push"
+            echo "No new translations to push"
           else
-            git commit -m "Update hackernews reports for $(date -u +%Y-%m-%d)"
+            git commit -m "Add Chinese translations for $(date -u +%Y-%m-%d)"
             push_with_rebase_retry() {
               for attempt in 1 2 3 4 5; do
                 git fetch origin main
