@@ -48,7 +48,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate markdown trend reports for ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ missing counterparts, dated before today. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until all generation tasks are complete before exiting. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
 
       - name: Detect new ${{ inputs.source_label }} reports
         id: check-reports
