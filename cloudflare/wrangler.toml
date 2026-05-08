@@ -12,6 +12,18 @@ GITHUB_REPO = "vibewatch/vibewatch.github.io"
 # GITHUB_REF defaults to "main" if omitted.
 # GITHUB_REF = "main"
 
+# Default Copilot model dispatched to every workflow.
+# Allowed: gpt-5.4, gpt-5.5, claude-opus-4.6, claude-sonnet-4.6
+WORKFLOW_MODEL = "gpt-5.4"
+
+# Optional per-workflow overrides. Uncomment to override WORKFLOW_MODEL for a
+# single workflow without affecting the rest.
+# MODEL_HACKERNEWS = "gpt-5.4"
+# MODEL_YOUTUBE    = "gpt-5.4"
+# MODEL_REDDIT     = "gpt-5.4"
+# MODEL_TWITTER    = "gpt-5.4"
+# MODEL_TRANSLATE  = "gpt-5.4"
+
 # Set secrets via:
 #   npx wrangler secret put GITHUB_TOKEN
 #
