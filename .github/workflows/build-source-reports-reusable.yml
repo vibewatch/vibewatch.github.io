@@ -11,6 +11,11 @@ on:
         description: Human-readable source name for prompts, step names, and commits.
         required: true
         type: string
+      model:
+        description: Copilot model to use for report generation.
+        required: false
+        default: gpt-5.4
+        type: string
     secrets:
       HARVESTER_PAT:
         required: true
@@ -43,12 +48,32 @@ jobs:
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
+      - name: Select Copilot model effort
+        id: copilot-model
+        env:
+          COPILOT_MODEL: ${{ inputs.model || 'gpt-5.4' }}
+        run: |
+          case "$COPILOT_MODEL" in
+            claude-opus-4.6|claude-sonnet-4.6)
+              COPILOT_EFFORT=high
+              ;;
+            gpt-5.4|gpt-5.5)
+              COPILOT_EFFORT=xhigh
+              ;;
+            *)
+              echo "::error::Unsupported Copilot model: $COPILOT_MODEL"
+              exit 1
+              ;;
+          esac
+          echo "model=$COPILOT_MODEL" >> "$GITHUB_OUTPUT"
+          echo "effort=$COPILOT_EFFORT" >> "$GITHUB_OUTPUT"
+
       - name: Generate ${{ inputs.source_label }} markdown reports
         working-directory: harvester
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until all generation tasks are complete before exiting. Do NOT run git add or git commit." --model claude-opus-4.6 --yolo --no-ask-user
+          copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until every corresponding English .md report file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --no-ask-user
 
       - name: Detect new ${{ inputs.source_label }} reports
         id: check-reports

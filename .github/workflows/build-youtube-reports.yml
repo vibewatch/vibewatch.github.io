@@ -4,6 +4,17 @@ on:
   # schedule: # Disabled: Cloudflare Worker handles scheduling
   #   - cron: '30 1 * * *'
   workflow_dispatch:
+    inputs:
+      model:
+        description: Copilot model to use for report generation.
+        required: false
+        type: choice
+        default: gpt-5.4
+        options:
+          - claude-opus-4.6
+          - claude-sonnet-4.6
+          - gpt-5.4
+          - gpt-5.5
 
 permissions:
   contents: read
@@ -19,6 +30,7 @@ jobs:
     with:
       source_key: youtube
       source_label: YouTube
+      model: ${{ inputs.model || 'gpt-5.4' }}
     secrets:
       HARVESTER_PAT: ${{ secrets.HARVESTER_PAT }}
       COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
