@@ -4,11 +4,13 @@
  * Cloudflare Cron Triggers fire at the exact UTC times used by the website's
  * disabled GitHub Actions schedules, and this Worker dispatches the matching workflow.
  *
- * Required secrets (set via `wrangler secret put`):
+ * Required secret (set via `wrangler secret put`):
  *   GITHUB_TOKEN - Fine-grained PAT with Actions: Read & Write on the target repo
+
+ * Required Worker var:
  *   GITHUB_REPO  - Owner/repo string, e.g. "vibewatch/vibewatch.github.io"
  *
- * Optional secret:
+ * Optional Worker var:
  *   GITHUB_REF   - Git ref to dispatch, defaults to "main"
  *
  * Schedule reference:

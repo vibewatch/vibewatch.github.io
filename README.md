@@ -71,11 +71,10 @@ From `cloudflare/`, deploy it with Wrangler:
 
 ```bash
 npx wrangler secret put GITHUB_TOKEN
-npx wrangler secret put GITHUB_REPO
 npx wrangler deploy
 ```
 
-Use a fine-grained GitHub PAT with **Actions: Read & Write** access on `vibewatch/vibewatch.github.io`. Set `GITHUB_REPO` to `vibewatch/vibewatch.github.io`. `GITHUB_REF` is optional and defaults to `main`.
+Use a fine-grained GitHub PAT with **Actions: Read & Write** access on `vibewatch/vibewatch.github.io`. `GITHUB_REPO` is stored as a non-sensitive Worker var in `cloudflare/wrangler.toml`. `GITHUB_REF` is optional, defaults to `main`, and can also be set as a Worker var if dispatches need to target another ref.
 
 ### Report Generation Pipeline
 
