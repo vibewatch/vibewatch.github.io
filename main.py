@@ -187,6 +187,8 @@ def define_env(env):
 
             cal = calendar.Calendar(firstweekday=6)  # Sunday first
             weeks = cal.monthdayscalendar(year, month)
+            while len(weeks) < 6:
+                weeks.append([0] * 7)
 
             html_parts.append(f'<div class="report-calendar">')
             html_parts.append(
