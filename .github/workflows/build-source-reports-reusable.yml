@@ -73,7 +73,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until every corresponding English .md report file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --no-ask-user
+          copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until every corresponding English .md report file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --autopilot
 
       - name: Detect new ${{ inputs.source_label }} reports
         id: check-reports
