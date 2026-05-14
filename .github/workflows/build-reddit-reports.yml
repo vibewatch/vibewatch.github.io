@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   build-reddit-reports:
-    name: Generate Reddit reports and sync website
+    name: Build Reddit reports
     uses: ./.github/workflows/build-source-reports-reusable.yml
     with:
       source_key: reddit

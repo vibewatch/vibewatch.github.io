@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   build-hackernews-reports:
-    name: Generate HackerNews reports and sync website
+    name: Build HackerNews reports
     uses: ./.github/workflows/build-source-reports-reusable.yml
     with:
       source_key: hackernews

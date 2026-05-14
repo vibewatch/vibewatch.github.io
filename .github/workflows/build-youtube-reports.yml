@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   build-youtube-reports:
-    name: Generate YouTube reports and sync website
+    name: Build YouTube reports
     uses: ./.github/workflows/build-source-reports-reusable.yml
     with:
       source_key: youtube

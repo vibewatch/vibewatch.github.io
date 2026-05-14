@@ -22,27 +22,27 @@ concurrency:
 
 jobs:
   build-site:
-    name: Build MkDocs site
+    name: Build site
     permissions:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout website repository
+      - name: Checkout
         uses: actions/checkout@v6
       - name: Set up uv
         uses: astral-sh/setup-uv@v8.0.0
-      - name: Install Python dependencies
+      - name: Install deps
         run: uv sync --locked
-      - name: Build MkDocs site
+      - name: Build MkDocs
         # run: uv run mkdocs build --strict
         run: uv run mkdocs build
-      - name: Upload GitHub Pages artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: site/
 
   deploy-site:
-    name: Deploy site to GitHub Pages
+    name: Deploy to Pages
     needs: build-site
     permissions:
       pages: write
@@ -52,23 +52,23 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy GitHub Pages site
+      - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v5
 
   notify-subscribers:
-    name: Notify subscribers about new reports
+    name: Notify subscribers
     needs: deploy-site
     permissions:
       contents: read
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - name: Checkout website repository for diff
+      - name: Checkout (with history)
         uses: actions/checkout@v6
         with:
           fetch-depth: 2
-      - name: Detect newly added report files
+      - name: Detect new reports
         id: detect
         run: |
           # Find newly added .md report files (not .zh.md translations)
@@ -105,7 +105,7 @@ jobs:
             echo "$BODY" >> "$GITHUB_OUTPUT"
             echo "EOF" >> "$GITHUB_OUTPUT"
           fi
-      - name: Check newsletter configuration
+      - name: Check newsletter config
         id: newsletter-config
         if: steps.detect.outputs.skip != 'true'
         env:
@@ -118,7 +118,7 @@ jobs:
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Send newsletter notification to subscribers
+      - name: Send newsletter
         if: steps.detect.outputs.skip != 'true' && steps.newsletter-config.outputs.configured == 'true'
         continue-on-error: true
         env:

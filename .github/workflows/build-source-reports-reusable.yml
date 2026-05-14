@@ -32,23 +32,23 @@ env:
 
 jobs:
   build-source-reports:
-    name: Generate ${{ inputs.source_label }} reports and sync website
+    name: Build ${{ inputs.source_label }} reports
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout harvester repository
+      - name: Checkout harvester
         uses: actions/checkout@v6
         with:
           repository: ${{ env.HARVESTER_REPO }}
           token: ${{ secrets.HARVESTER_PAT }}
           path: harvester
 
-      - name: Set up Node.js for Copilot CLI
+      - name: Setup Node.js
         uses: actions/setup-node@v6
 
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Select Copilot model effort
+      - name: Select model effort
         id: copilot-model
         env:
           COPILOT_MODEL: ${{ inputs.model || 'gpt-5.4' }}
@@ -68,7 +68,7 @@ jobs:
           echo "model=$COPILOT_MODEL" >> "$GITHUB_OUTPUT"
           echo "effort=$COPILOT_EFFORT" >> "$GITHUB_OUTPUT"
 
-      - name: Generate ${{ inputs.source_label }} markdown reports
+      - name: Generate reports
         working-directory: harvester
         continue-on-error: true
         env:
@@ -76,7 +76,7 @@ jobs:
         run: |
           copilot -p "Generate English markdown trend reports for all ${{ inputs.source_label }} JSON files in data/${{ inputs.source_key }}/ that are dated before today and missing counterparts in reports/${{ inputs.source_key }}/. Run independent report generations concurrently where practical, and wait until every corresponding English .md report file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --autopilot
 
-      - name: Detect new ${{ inputs.source_label }} reports
+      - name: Detect new reports
         id: check-reports
         working-directory: harvester
         run: |
@@ -90,7 +90,7 @@ jobs:
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Commit and push ${{ inputs.source_label }} reports to harvester
+      - name: Push reports to harvester
         if: steps.check-reports.outputs.has_changes == 'true'
         working-directory: harvester
         run: |
@@ -117,19 +117,19 @@ jobs:
           fi
           push_with_rebase_retry
 
-      - name: Checkout website repository
+      - name: Checkout website
         if: steps.check-reports.outputs.has_changes == 'true'
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.WEBSITE_PAT }}
           path: website
 
-      - name: Copy ${{ inputs.source_label }} reports into website docs
+      - name: Copy reports to website
         if: steps.check-reports.outputs.has_changes == 'true'
         run: |
           rsync -av --include='*/' --exclude='*.zh.md' --include='*.md' --exclude='*' "harvester/reports/${{ inputs.source_key }}/" "website/docs/${{ inputs.source_key }}/"
 
-      - name: Commit and push ${{ inputs.source_label }} docs to website
+      - name: Push docs to website
         if: steps.check-reports.outputs.has_changes == 'true'
         working-directory: website
         run: |
