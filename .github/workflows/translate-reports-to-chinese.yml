@@ -66,6 +66,7 @@ jobs:
 
       - name: Generate Chinese markdown translations
         working-directory: harvester
+        continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |

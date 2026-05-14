@@ -70,6 +70,7 @@ jobs:
 
       - name: Generate ${{ inputs.source_label }} markdown reports
         working-directory: harvester
+        continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
