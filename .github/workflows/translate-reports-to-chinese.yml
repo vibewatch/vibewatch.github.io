@@ -28,23 +28,23 @@ env:
 
 jobs:
   translate:
-    name: Translate reports to Chinese and sync website
+    name: Translate to Chinese
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout harvester repository
+      - name: Checkout harvester
         uses: actions/checkout@v6
         with:
           repository: ${{ env.HARVESTER_REPO }}
           token: ${{ secrets.HARVESTER_PAT }}
           path: harvester
 
-      - name: Set up Node.js for Copilot CLI
+      - name: Setup Node.js
         uses: actions/setup-node@v6
 
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Select Copilot model effort
+      - name: Select model effort
         id: copilot-model
         env:
           COPILOT_MODEL: ${{ inputs.model || 'gpt-5.4' }}
@@ -64,7 +64,7 @@ jobs:
           echo "model=$COPILOT_MODEL" >> "$GITHUB_OUTPUT"
           echo "effort=$COPILOT_EFFORT" >> "$GITHUB_OUTPUT"
 
-      - name: Generate Chinese markdown translations
+      - name: Translate reports
         working-directory: harvester
         continue-on-error: true
         env:
@@ -72,7 +72,7 @@ jobs:
         run: |
           copilot -p "Translate English markdown reports in reports/ lacking Chinese versions. Run the translation work through concurrent write-enabled subagents, split by source/topic or file batch so each subagent writes only its assigned missing .zh.md files, and wait until every corresponding .zh.md file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --autopilot
 
-      - name: Detect new Chinese translations
+      - name: Detect new translations
         id: check-translations
         working-directory: harvester
         run: |
@@ -86,7 +86,7 @@ jobs:
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Commit and push Chinese translations to harvester
+      - name: Push translations to harvester
         if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: harvester
         run: |
@@ -113,19 +113,19 @@ jobs:
           fi
           push_with_rebase_retry
 
-      - name: Checkout website repository
+      - name: Checkout website
         if: steps.check-translations.outputs.has_changes == 'true'
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.WEBSITE_PAT }}
           path: website
 
-      - name: Copy Chinese translations into website docs
+      - name: Copy translations to website
         if: steps.check-translations.outputs.has_changes == 'true'
         run: |
           rsync -av --include='*/' --include='*.zh.md' --exclude='*' harvester/reports/ website/docs/
 
-      - name: Commit and push Chinese docs to website
+      - name: Push docs to website
         if: steps.check-translations.outputs.has_changes == 'true'
         working-directory: website
         run: |
