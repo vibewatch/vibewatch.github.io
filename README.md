@@ -91,11 +91,11 @@ The `translate-reports-to-chinese.yml` workflow handles `.zh.md` translations se
 
 The `notify-subscribers` job in `deploy-site.yml` runs after deployment on push events:
 
-1. Compares `HEAD~1..HEAD` to detect **newly added** English report files (excludes `.zh.md` translations).
-2. Builds an HTML email with links to each new report on `genisisiq.com`.
-3. Sends the email to subscribers via a newsletter worker API.
+1. Compares `HEAD~1..HEAD` to detect **newly added** English report files (excludes `.zh.md` translations and non-date filenames like `index.md`).
+2. Runs `scripts/build_newsletter_digest.py` to render an inline-styled HTML digest with one card per new report (linked title, source · topic · date meta line, one-paragraph description sourced from the same section-1 topic extraction used by the RSS feed, and a "Read full report" link). The renderer caps the body around 80 KB and appends an overflow line when more reports exist than fit.
+3. Sends the digest to subscribers via the newsletter worker's `/api/send` endpoint.
 
-Newsletter delivery is optional: the job skips sending when newsletter secrets are missing, and notification delivery errors do not fail the site deployment.
+Newsletter delivery is optional: the job skips sending when newsletter secrets are missing, and notification delivery errors do not fail the site deployment. Render a dry-run digest locally with `printf '%s\n' path/to/report.md | python3 scripts/build_newsletter_digest.py > /tmp/digest.html`.
 
 ## Development
 
