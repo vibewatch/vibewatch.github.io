@@ -6,15 +6,15 @@ on:
   workflow_dispatch:
     inputs:
       model:
-        description: Copilot model to use for translation.
+        description: Copilot SDK model to use for translation and review.
         required: false
         type: choice
-        default: gpt-5.4
+        default: gemini-3.8-flash
         options:
-          - claude-opus-4.6
-          - claude-sonnet-4.6
+          - gemini-3.8-flash
+          - gpt-5.6-luna
+          - gpt-5.4-mini
           - gpt-5.4
-          - gpt-5.5
 
 permissions:
   contents: read
@@ -31,6 +31,12 @@ jobs:
     name: Translate to Chinese
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout website
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.WEBSITE_PAT }}
+          path: website
+
       - name: Checkout harvester
         uses: actions/checkout@v6
         with:
@@ -40,21 +46,29 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
 
-      - name: Install Copilot CLI
-        run: npm install -g @github/copilot
+      - name: Install translation dependencies
+        working-directory: website
+        run: npm ci
 
       - name: Select model effort
         id: copilot-model
         env:
-          COPILOT_MODEL: ${{ inputs.model || 'gpt-5.4' }}
+          COPILOT_MODEL: ${{ inputs.model || 'gemini-3.8-flash' }}
         run: |
           case "$COPILOT_MODEL" in
-            claude-opus-4.6|claude-sonnet-4.6)
-              COPILOT_EFFORT=high
+            gemini-3.8-flash)
+              COPILOT_EFFORT=default
               ;;
-            gpt-5.4|gpt-5.5)
-              COPILOT_EFFORT=xhigh
+            gpt-5.6-luna)
+              COPILOT_EFFORT=none
+              ;;
+            gpt-5.4-mini|gpt-5.4)
+              COPILOT_EFFORT=low
               ;;
             *)
               echo "::error::Unsupported Copilot model: $COPILOT_MODEL"
@@ -65,22 +79,24 @@ jobs:
           echo "effort=$COPILOT_EFFORT" >> "$GITHUB_OUTPUT"
 
       - name: Translate reports
-        working-directory: harvester
-        continue-on-error: true
+        working-directory: website
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
-          copilot -p "Translate English markdown reports in reports/ lacking Chinese versions. Run the translation work through concurrent write-enabled subagents, split by source/topic or file batch so each subagent writes only its assigned missing .zh.md files, and wait until every corresponding .zh.md file has been generated before exiting. Do NOT run git add or git commit." --model "${{ steps.copilot-model.outputs.model }}" --effort "${{ steps.copilot-model.outputs.effort }}" --yolo --autopilot
+          node scripts/translate-markdown.mjs \
+            --root ../harvester/reports \
+            --model "${{ steps.copilot-model.outputs.model }}" \
+            --effort "${{ steps.copilot-model.outputs.effort }}" \
+            --fallback-model gpt-5.4 \
+            --fallback-effort low \
+            --concurrency 2
 
       - name: Detect new translations
         id: check-translations
         working-directory: harvester
         run: |
-          # Detect uncommitted .zh.md files (normal case)
           UNSTAGED=$(git status --porcelain reports/ | grep '\.zh\.md$' || true)
-          # Detect .zh.md files already committed by Copilot CLI (fallback)
-          COMMITTED=$(git log origin/main..HEAD --name-only --diff-filter=A 2>/dev/null | grep '\.zh\.md$' || true)
-          if [ -n "$UNSTAGED" ] || [ -n "$COMMITTED" ]; then
+          if [ -n "$UNSTAGED" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -112,13 +128,6 @@ jobs:
             git commit -m "Add Chinese translations for $(date -u +%Y-%m-%d)"
           fi
           push_with_rebase_retry
-
-      - name: Checkout website
-        if: steps.check-translations.outputs.has_changes == 'true'
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.WEBSITE_PAT }}
-          path: website
 
       - name: Copy translations to website
         if: steps.check-translations.outputs.has_changes == 'true'

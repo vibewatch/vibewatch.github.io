@@ -1,0 +1,12 @@
+{
+  "name": "vibewatch-website-automation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:translation": "node --test scripts/translate-markdown.test.mjs",
+    "translate:reports": "node scripts/translate-markdown.mjs"
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "1.0.14"
+  }
+}
