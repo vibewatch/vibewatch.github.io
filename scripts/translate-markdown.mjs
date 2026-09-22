@@ -16,7 +16,7 @@ Write fluent, concise, publication-ready Chinese that reads as if a native Chine
 - Avoid translationese, unnecessary passive voice, stacked modifiers, repeated subjects, and literal calques that a native Chinese editor would not use.
 - Keep usernames, company/product/model/repository names, acronyms, commands, code, paths, numbers, dates, and units unchanged.
 - Preserve attribution, uncertainty, and modality exactly: "may", "might", "could", "should", and "must" are not interchangeable, and reported claims must not become established facts.
-- Preserve every token beginning with VIBEWATCHPROTECTEDTOKEN exactly once and unchanged; these tokens represent URLs or code that will be restored after translation.
+- Preserve every token beginning with VIBEWATCHPROTECTEDTOKEN exactly once and unchanged. Each token represents a complete immutable Markdown construct; never wrap a token in link, image, emphasis, or code syntax.
 - Use established Chinese technical terms; retain English only where Chinese would be less precise.
 - Render idioms by meaning, not word-for-word.
 - Do not summarize, explain, embellish, add title brackets, or introduce facts.
@@ -31,7 +31,7 @@ Given an English source and a Chinese draft, return a corrected Simplified-Chine
 - Translate sentence-like article/post titles inside link labels and all image alt text. Do not mistake titles for protected product names.
 - Rewrite English-shaped sentence structures into idiomatic, concise Chinese while retaining every fact and qualifier.
 - Correct any drift in attribution, certainty, or modality; never strengthen "may/might/could" into "will/must".
-- Preserve every token beginning with VIBEWATCHPROTECTEDTOKEN exactly once and unchanged.
+- Preserve every token beginning with VIBEWATCHPROTECTEDTOKEN exactly once and unchanged. Never wrap a token in additional Markdown syntax.
 - The finished text must feel originally written and professionally edited in Chinese, not machine-translated.
 - Preserve every URL, username, product/model name, number, date, code span, image, paragraph, and heading level.
 - Do not summarize, embellish, add title brackets, or add commentary.
@@ -40,8 +40,10 @@ Given an English source and a Chinese draft, return a corrected Simplified-Chine
 function parseArgs(argv) {
   const options = {
     root: "reports",
-    model: "gemini-3.8-flash",
-    effort: "default",
+    model: "gpt-5.6-luna",
+    effort: "none",
+    reviewModel: "gpt-5.4",
+    reviewEffort: "low",
     fallbackModel: "gpt-5.4",
     fallbackEffort: "low",
     concurrency: 2,
@@ -65,6 +67,14 @@ function parseArgs(argv) {
         break;
       case "--effort":
         options.effort = value;
+        index += 1;
+        break;
+      case "--review-model":
+        options.reviewModel = value;
+        index += 1;
+        break;
+      case "--review-effort":
+        options.reviewEffort = value;
         index += 1;
         break;
       case "--fallback-model":
@@ -158,13 +168,13 @@ async function findMissingTranslations(
 }
 
 function markdownSignature(markdown) {
+  const links = parseMarkdownLinks(markdown);
   return {
     headingLevels: [...markdown.matchAll(/^(#{1,6})\s/gm)].map((match) => match[1].length),
-    urls: [...markdown.matchAll(/!?\[[^\]]*\]\(([^)]+)\)/g)]
-      .map((match) => match[1])
-      .sort(),
-    imageUrls: [...markdown.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)]
-      .map((match) => match[1])
+    urls: links.map((link) => link.destination).sort(),
+    imageUrls: links
+      .filter((link) => link.image)
+      .map((link) => link.destination)
       .sort(),
     codeFences: (markdown.match(/^```/gm) ?? []).length,
     inlineCodeMarkers: (markdown.match(/(?<!`)`(?!`)/g) ?? []).length,
@@ -173,8 +183,120 @@ function markdownSignature(markdown) {
   };
 }
 
+function parseMarkdownLinks(markdown) {
+  const links = [];
+  const linkStart = /!?\[/g;
+  let match;
+
+  while ((match = linkStart.exec(markdown)) !== null) {
+    const labelStart = match.index + match[0].length;
+    const separator = markdown.indexOf("](", labelStart);
+    if (separator === -1 || markdown.slice(labelStart, separator).includes("\n")) {
+      continue;
+    }
+
+    let depth = 1;
+    let index = separator + 2;
+    for (; index < markdown.length && depth > 0; index += 1) {
+      if (markdown[index] === "\\") {
+        index += 1;
+      } else if (markdown[index] === "(") {
+        depth += 1;
+      } else if (markdown[index] === ")") {
+        depth -= 1;
+      }
+    }
+    if (depth !== 0) continue;
+
+    links.push({
+      start: match.index,
+      end: index,
+      image: match[0].startsWith("!"),
+      label: markdown.slice(labelStart, separator),
+      destination: markdown.slice(separator + 2, index - 1),
+    });
+    linkStart.lastIndex = index;
+  }
+
+  return links;
+}
+
 function removeAddedInlineCodeMarkers(markdown) {
-  return markdown.replace(/(?<!`)`{1,2}([^`\n]+)`{1,2}(?!`)/g, "$1");
+  return markdown
+    .replace(/(?<!`)`{1,2}([^`\n]+)`{1,2}(?!`)/g, "$1")
+    .replace(/\*\*/g, "");
+}
+
+function localizeReaderFacingMetrics(markdown) {
+  return markdown
+    .replace(/\b(\d[\d,]*)\s+points?\b/gi, "$1 分")
+    .replace(/\b(\d[\d,]*)\s+comments?\b/gi, "$1 条评论")
+    .replace(/\bscore\s+(-?\d[\d,]*)\b/gi, "得分 $1")
+    .replace(/\b(\d[\d,]*)\s+likes?\b/gi, "$1 次点赞")
+    .replace(/\b(\d[\d,]*)\s+repl(?:y|ies)\b/gi, "$1 条回复")
+    .replace(/\b(\d[\d,]*)\s+views?\b/gi, "$1 次浏览")
+    .replace(/\b(\d[\d,]*)\s+bookmarks?\b/gi, "$1 次收藏");
+}
+
+function normalizeProtectedTokenWrappers(markdown, protections) {
+  let normalized = markdown;
+  for (const { token, kind } of protections) {
+    if (kind !== "link") continue;
+    const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    normalized = normalized.replace(
+      new RegExp(
+        `!?\\[[^\\]\\n]*\\]\\([^\\)\\n]*${escapedToken}[^\\)\\n]*\\)`,
+        "g",
+      ),
+      token,
+    );
+  }
+  return normalized;
+}
+
+function stripAddedMarkdownLinks(markdown, protections) {
+  const linkByToken = new Map(
+    protections
+      .filter((protection) => protection.kind === "link")
+      .map((protection) => [protection.token, protection]),
+  );
+  const linkStart = /!?\[/g;
+  let cursor = 0;
+  let result = "";
+  let match;
+
+  while ((match = linkStart.exec(markdown)) !== null) {
+    const labelStart = match.index + match[0].length;
+    const separator = markdown.indexOf("](", labelStart);
+    if (separator === -1 || markdown.slice(labelStart, separator).includes("\n")) {
+      continue;
+    }
+
+    let depth = 1;
+    let index = separator + 2;
+    for (; index < markdown.length && depth > 0; index += 1) {
+      if (markdown[index] === "\\") {
+        index += 1;
+      } else if (markdown[index] === "(") {
+        depth += 1;
+      } else if (markdown[index] === ")") {
+        depth -= 1;
+      }
+    }
+    if (depth !== 0) continue;
+
+    const label = markdown.slice(labelStart, separator);
+    const destination = markdown.slice(separator + 2, index - 1);
+    const protectedToken = [...linkByToken.keys()].find((token) =>
+      destination.includes(token),
+    );
+    result += markdown.slice(cursor, match.index);
+    result += protectedToken ?? label;
+    cursor = index;
+    linkStart.lastIndex = index;
+  }
+
+  return `${result}${markdown.slice(cursor)}`;
 }
 
 function visibleLanguageRatio(markdown) {
@@ -190,41 +312,144 @@ function visibleLanguageRatio(markdown) {
 
 function protectMarkdown(markdown) {
   const protections = [];
-  const protect = (value) => {
+  const protect = (protection) => {
     const token = `VIBEWATCHPROTECTEDTOKEN${String(protections.length).padStart(6, "0")}`;
-    protections.push({ token, value });
+    protections.push({ token, ...protection });
     return token;
   };
 
-  let protectedMarkdown = markdown.replace(/```[\s\S]*?```/g, protect);
-  protectedMarkdown = protectedMarkdown.replace(/(?<!`)`[^`\n]+`(?!`)/g, protect);
+  let protectedMarkdown = markdown.replace(
+    /```[\s\S]*?```/g,
+    (value) => protect({ kind: "exact", value }),
+  );
   protectedMarkdown = protectedMarkdown.replace(
-    /(!?\[[^\]]*\]\()([^)]+)(\))/g,
-    (_, prefix, destination, suffix) => `${prefix}${protect(destination)}${suffix}`,
+    /(?<!`)`[^`\n]+`(?!`)/g,
+    (value) => protect({ kind: "exact", value }),
+  );
+  protectedMarkdown = protectMarkdownLinks(protectedMarkdown, protect);
+  protectedMarkdown = protectedMarkdown.replace(
+    /\*\*/g,
+    (value) => protect({ kind: "exact", value }),
   );
   protectedMarkdown = protectedMarkdown.replace(
     /https?:\/\/[^\s<]+/g,
-    (url) => protect(url),
+    (value) => protect({ kind: "exact", value }),
   );
 
   return { protectedMarkdown, protections };
 }
 
-function restoreProtectedMarkdown(markdown, protections) {
-  let restored = markdown;
-  for (const { token, value } of protections) {
-    const occurrences = restored.split(token).length - 1;
+function protectMarkdownLinks(markdown, protect) {
+  let cursor = 0;
+  let result = "";
+
+  for (const link of parseMarkdownLinks(markdown)) {
+    result += markdown.slice(cursor, link.start);
+    result += protect({
+      kind: "link",
+      image: link.image,
+      label: link.label,
+      destination: link.destination,
+    });
+    cursor = link.end;
+  }
+
+  return `${result}${markdown.slice(cursor)}`;
+}
+
+function assertProtectedTokens(markdown, protections) {
+  for (const { token } of protections) {
+    const occurrences = markdown.split(token).length - 1;
     if (occurrences !== 1) {
       throw new Error(
         `protected token ${token} occurred ${occurrences} times instead of once`,
       );
     }
+  }
+}
+
+function restoreProtectedMarkdown(markdown, protections, translatedLabels = new Map()) {
+  assertProtectedTokens(markdown, protections);
+  let restored = markdown;
+  for (const protection of protections) {
+    const { token } = protection;
+    const value =
+      protection.kind === "link"
+        ? `${protection.image ? "!" : ""}[${translatedLabels.get(token) ?? protection.label}](${protection.destination})`
+        : protection.value;
     restored = restored.replace(token, value);
   }
+
   if (/VIBEWATCHPROTECTEDTOKEN\d{6}/.test(restored)) {
     throw new Error("unexpected protected token remains");
   }
   return restored;
+}
+
+async function translateProtectedLabels(client, protections, modelConfig) {
+  const labels = protections
+    .filter(
+      (protection) =>
+        protection.kind === "link" &&
+        protection.label.trim() &&
+        !isIdentityLink(protection.destination),
+    )
+    .map((protection) => ({
+      token: protection.token,
+      text: protection.label,
+      kind: protection.image ? "image-alt" : "link-label",
+    }));
+  if (labels.length === 0) return new Map();
+
+  const response = await requestMarkdown(client, {
+    ...modelConfig,
+    systemPrompt: `Translate Markdown link labels and image alt text into natural Simplified Chinese.
+The text must read like professionally edited native Chinese.
+Preserve genuine usernames, people, companies, products, models, repositories, acronyms, and code names unchanged.
+Return every input token exactly once. Return strict JSON only:
+{"translations":[{"token":"VIBEWATCHPROTECTEDTOKEN000000","translation":"..."}]}`,
+    prompt: JSON.stringify({ labels }),
+  });
+  const parsed = JSON.parse(response.replace(/^```json\s*|\s*```$/g, ""));
+  if (!Array.isArray(parsed.translations) || parsed.translations.length !== labels.length) {
+    throw new Error("protected-label translation returned an invalid list");
+  }
+
+  const translations = new Map();
+  for (const item of parsed.translations) {
+    const translation =
+      typeof item.translation === "string"
+        ? item.translation
+            .replace(/\[/g, "［")
+            .replace(/\]/g, "］")
+            .replace(/[\r\n]+/g, " ")
+            .trim()
+        : item.translation;
+    if (
+      typeof item.token !== "string" ||
+      typeof translation !== "string" ||
+      translation.length === 0 ||
+      translations.has(item.token)
+    ) {
+      throw new Error(`invalid protected-label translation for ${item.token}`);
+    }
+    translations.set(item.token, translation);
+  }
+  for (const label of labels) {
+    if (!translations.has(label.token)) {
+      throw new Error(`missing protected-label translation for ${label.token}`);
+    }
+  }
+  return translations;
+}
+
+function isIdentityLink(destination) {
+  return [
+    /^https?:\/\/news\.ycombinator\.com\/user\?id=/i,
+    /^https?:\/\/(?:www\.)?reddit\.com\/(?:u|user)\//i,
+    /^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[^/]+\/?$/i,
+    /^https?:\/\/(?:www\.)?youtube\.com\/@[^/]+\/?$/i,
+  ].some((pattern) => pattern.test(destination));
 }
 
 function untranslatedLinkLabels(markdown) {
@@ -332,38 +557,55 @@ Return strict JSON only with this shape: {"translations":[{"source":"exact input
   return applyLinkLabelTranslations(translation, orderedTranslations);
 }
 
-async function translateAndReview(client, source, modelConfig) {
+async function translateAndReview(client, source, draftModelConfig, reviewModelConfig) {
   const { protectedMarkdown: protectedSource, protections } = protectMarkdown(source);
-  const draft = removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-    ...modelConfig,
-    systemPrompt: TRANSLATOR_PROMPT,
-    prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>`,
-  }));
+  const draft = stripAddedMarkdownLinks(
+    normalizeProtectedTokenWrappers(
+      removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+        ...draftModelConfig,
+        systemPrompt: TRANSLATOR_PROMPT,
+        prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>`,
+      })),
+      protections,
+    ),
+    protections,
+  );
+  assertProtectedTokens(draft, protections);
   const draftErrors = validateTranslation(protectedSource, draft);
   if (draftErrors.length > 0) {
     throw new Error(`draft validation failed: ${draftErrors.join(", ")}`);
   }
 
-  const reviewed = removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-    ...modelConfig,
-    systemPrompt: REVIEWER_PROMPT,
-    prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
-  }));
-  let finalTranslation = reviewed;
-  const untranslatedLabels = untranslatedLinkLabels(finalTranslation);
-  if (untranslatedLabels.length > 0) {
-    finalTranslation = await repairLinkLabels(
-      client,
-      finalTranslation,
-      untranslatedLabels,
-      modelConfig,
-    );
-  }
+  const reviewed = stripAddedMarkdownLinks(
+    normalizeProtectedTokenWrappers(
+      removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+        ...reviewModelConfig,
+        systemPrompt: REVIEWER_PROMPT,
+        prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
+      })),
+      protections,
+    ),
+    protections,
+  );
+  assertProtectedTokens(reviewed, protections);
+  let finalTranslation = localizeReaderFacingMetrics(reviewed);
   const protectedReviewErrors = validateTranslation(protectedSource, finalTranslation);
   if (protectedReviewErrors.length > 0) {
-    throw new Error(`review validation failed: ${protectedReviewErrors.join(", ")}`);
+    const actualSignature = markdownSignature(finalTranslation);
+    throw new Error(
+      `review validation failed: ${protectedReviewErrors.join(", ")}; generated URLs: ${JSON.stringify(actualSignature.urls.slice(0, 5))}`,
+    );
   }
-  finalTranslation = restoreProtectedMarkdown(finalTranslation, protections);
+  const translatedLabels = await translateProtectedLabels(
+    client,
+    protections,
+    reviewModelConfig,
+  );
+  finalTranslation = restoreProtectedMarkdown(
+    finalTranslation,
+    protections,
+    translatedLabels,
+  );
   const reviewErrors = validateTranslation(source, finalTranslation);
   if (reviewErrors.length > 0) {
     throw new Error(`review validation failed: ${reviewErrors.join(", ")}`);
@@ -375,28 +617,50 @@ async function translateAndReview(client, source, modelConfig) {
 async function translateFile(client, file, options) {
   const source = await fs.readFile(file.sourcePath, "utf8");
   const attempts = [
-    { model: options.model, effort: options.effort },
-    { model: options.fallbackModel, effort: options.fallbackEffort },
+    {
+      draft: { model: options.model, effort: options.effort },
+      review: { model: options.reviewModel, effort: options.reviewEffort },
+    },
+    {
+      draft: { model: options.fallbackModel, effort: options.fallbackEffort },
+      review: { model: options.fallbackModel, effort: options.fallbackEffort },
+    },
   ].filter(
     (attempt, index, attemptsList) =>
       attemptsList.findIndex(
         (candidate) =>
-          candidate.model === attempt.model && candidate.effort === attempt.effort,
+          candidate.draft.model === attempt.draft.model &&
+          candidate.draft.effort === attempt.draft.effort &&
+          candidate.review.model === attempt.review.model &&
+          candidate.review.effort === attempt.review.effort,
       ) === index,
   );
   const failures = [];
 
   for (const attempt of attempts) {
     try {
-      console.log(`Translating ${file.sourcePath} with ${attempt.model} (${attempt.effort})`);
-      const translation = await translateAndReview(client, source, attempt);
+      console.log(
+        `Translating ${file.sourcePath} with ${attempt.draft.model} (${attempt.draft.effort}), reviewed by ${attempt.review.model} (${attempt.review.effort})`,
+      );
+      const translation = await translateAndReview(
+        client,
+        source,
+        attempt.draft,
+        attempt.review,
+      );
       const temporaryPath = `${file.translationPath}.tmp`;
       await fs.mkdir(path.dirname(file.translationPath), { recursive: true });
       await fs.writeFile(temporaryPath, `${translation}\n`, "utf8");
       await fs.rename(temporaryPath, file.translationPath);
-      return { ...file, model: attempt.model };
+      return {
+        ...file,
+        model: attempt.draft.model,
+        reviewModel: attempt.review.model,
+      };
     } catch (error) {
-      failures.push(`${attempt.model}: ${error.message}`);
+      failures.push(
+        `${attempt.draft.model}/${attempt.review.model}: ${error.message}`,
+      );
       console.warn(`Translation attempt failed for ${file.sourcePath}: ${error.message}`);
     }
   }
@@ -462,9 +726,13 @@ async function main() {
       .filter((result) => result.status === "fulfilled")
       .map((result) => result.value);
     const failures = settled.filter((result) => result.status === "rejected");
-    const fallbackCount = results.filter((result) => result.model === options.fallbackModel).length;
+    const fallbackCount = results.filter(
+      (result) =>
+        result.model === options.fallbackModel &&
+        result.reviewModel === options.fallbackModel,
+    ).length;
     console.log(
-      `Created ${results.length} translation(s); ${fallbackCount} used ${options.fallbackModel}.`,
+      `Created ${results.length} translation(s); ${fallbackCount} required full ${options.fallbackModel} fallback.`,
     );
     if (failures.length > 0) {
       for (const failure of failures) {
@@ -490,11 +758,16 @@ if (isDirectRun) {
 export {
   TRANSLATOR_PROMPT,
   findMissingTranslations,
+  isIdentityLink,
+  localizeReaderFacingMetrics,
+  markdownSignature,
   applyLinkLabelTranslations,
   protectMarkdown,
+  assertProtectedTokens,
+  normalizeProtectedTokenWrappers,
+  stripAddedMarkdownLinks,
   removeAddedInlineCodeMarkers,
   restoreProtectedMarkdown,
-  markdownSignature,
   parseArgs,
   validateTranslation,
   visibleLanguageRatio,

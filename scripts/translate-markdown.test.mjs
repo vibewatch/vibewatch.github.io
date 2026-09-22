@@ -6,10 +6,14 @@ import test from "node:test";
 import {
   applyLinkLabelTranslations,
   findMissingTranslations,
+  isIdentityLink,
+  localizeReaderFacingMetrics,
+  normalizeProtectedTokenWrappers,
   parseArgs,
   protectMarkdown,
   removeAddedInlineCodeMarkers,
   restoreProtectedMarkdown,
+  stripAddedMarkdownLinks,
   untranslatedLinkLabels,
   validateTranslation,
   visibleLanguageRatio,
@@ -18,8 +22,10 @@ import {
 test("parseArgs uses the best quality-cost default model", () => {
   assert.deepEqual(parseArgs([]), {
     root: "reports",
-    model: "gemini-3.8-flash",
-    effort: "default",
+    model: "gpt-5.6-luna",
+    effort: "none",
+    reviewModel: "gpt-5.4",
+    reviewEffort: "low",
     fallbackModel: "gpt-5.4",
     fallbackEffort: "low",
     concurrency: 2,
@@ -95,6 +101,15 @@ test("validateTranslation accepts translated prose with preserved Markdown", () 
   assert.deepEqual(validateTranslation(source, translation), []);
 });
 
+test("validateTranslation handles nested brackets and parentheses in links", () => {
+  const source =
+    "# Report\n\nRead [Launch HN: Acme [YC S26]](https://example.com/post_(one)).\n";
+  const translation =
+    "# 报告\n\n阅读[Acme 发布于 HN［YC S26］](https://example.com/post_(one))。\n";
+
+  assert.deepEqual(validateTranslation(source, translation), []);
+});
+
 test("validateTranslation rejects changed URLs and untranslated prose", () => {
   const source = "# Report\n\nRead [the story](https://example.com/a) carefully.\n";
   const translation =
@@ -117,9 +132,30 @@ test("protectMarkdown round-trips URLs and code exactly", () => {
   const markdown =
     "Read [the report](https://example.com/a?x=1) and run `npm test`.\n\n```js\nconsole.log('ok');\n```\n";
   const { protectedMarkdown, protections } = protectMarkdown(markdown);
+  const link = protections.find((protection) => protection.kind === "link");
 
-  assert.doesNotMatch(protectedMarkdown, /https:\/\/example\.com|npm test|console\.log/);
-  assert.equal(restoreProtectedMarkdown(protectedMarkdown, protections), markdown);
+  assert.doesNotMatch(
+    protectedMarkdown,
+    /the report|https:\/\/example\.com|npm test|console\.log/,
+  );
+  assert.equal(
+    restoreProtectedMarkdown(
+      protectedMarkdown,
+      protections,
+      new Map([[link.token, "这篇报告"]]),
+    ),
+    "Read [这篇报告](https://example.com/a?x=1) and run `npm test`.\n\n```js\nconsole.log('ok');\n```\n",
+  );
+});
+
+test("isIdentityLink recognizes user profile links", () => {
+  assert.equal(
+    isIdentityLink("https://news.ycombinator.com/user?id=forks"),
+    true,
+  );
+  assert.equal(isIdentityLink("https://www.reddit.com/user/example"), true);
+  assert.equal(isIdentityLink("https://x.com/example"), true);
+  assert.equal(isIdentityLink("https://x.com/example/status/123"), false);
 });
 
 test("restoreProtectedMarkdown rejects missing tokens", () => {
@@ -135,6 +171,45 @@ test("removeAddedInlineCodeMarkers removes model-added formatting", () => {
   assert.equal(
     removeAddedInlineCodeMarkers("使用 `MCP` 和 ``agent loop``。"),
     "使用 MCP 和 agent loop。",
+  );
+});
+
+test("localizeReaderFacingMetrics translates common social metrics", () => {
+  assert.equal(
+    localizeReaderFacingMetrics(
+      "(176 points, 150 comments, score 0, 2 likes, 1 reply, 3 views, 4 bookmarks)",
+    ),
+    "(176 分, 150 条评论, 得分 0, 2 次点赞, 1 条回复, 3 次浏览, 4 次收藏)",
+  );
+});
+
+test("normalizeProtectedTokenWrappers removes model-added links", () => {
+  const protections = [
+    {
+      token: "VIBEWATCHPROTECTEDTOKEN000001",
+      kind: "link",
+      label: "Report",
+      destination: "https://example.com",
+      image: false,
+    },
+  ];
+
+  assert.equal(
+    normalizeProtectedTokenWrappers(
+      '阅读[报告]( <VIBEWATCHPROTECTEDTOKEN000001> "来源" )。',
+      protections,
+    ),
+    "阅读VIBEWATCHPROTECTEDTOKEN000001。",
+  );
+});
+
+test("stripAddedMarkdownLinks discards invented destinations", () => {
+  assert.equal(
+    stripAddedMarkdownLinks(
+      "参见[额外说明](https://invented.example/path)和正文。",
+      [],
+    ),
+    "参见额外说明和正文。",
   );
 });
 

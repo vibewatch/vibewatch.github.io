@@ -6,12 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       model:
-        description: Copilot SDK model to use for translation and review.
+        description: Copilot SDK model to use for the low-cost first translation pass.
         required: false
         type: choice
-        default: gemini-3.8-flash
+        default: gpt-5.6-luna
         options:
-          - gemini-3.8-flash
           - gpt-5.6-luna
           - gpt-5.4-mini
           - gpt-5.4
@@ -58,12 +57,9 @@ jobs:
       - name: Select model effort
         id: copilot-model
         env:
-          COPILOT_MODEL: ${{ inputs.model || 'gemini-3.8-flash' }}
+          COPILOT_MODEL: ${{ inputs.model || 'gpt-5.6-luna' }}
         run: |
           case "$COPILOT_MODEL" in
-            gemini-3.8-flash)
-              COPILOT_EFFORT=default
-              ;;
             gpt-5.6-luna)
               COPILOT_EFFORT=none
               ;;
@@ -87,6 +83,8 @@ jobs:
             --root ../harvester/reports \
             --model "${{ steps.copilot-model.outputs.model }}" \
             --effort "${{ steps.copilot-model.outputs.effort }}" \
+            --review-model gpt-5.4 \
+            --review-effort low \
             --fallback-model gpt-5.4 \
             --fallback-effort low \
             --concurrency 2
