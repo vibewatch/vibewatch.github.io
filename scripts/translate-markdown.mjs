@@ -547,8 +547,9 @@ function isIdentityLink(destination) {
 }
 
 function untranslatedLinkLabels(markdown) {
-  return [...markdown.matchAll(/!?\[([^\]]+)\]\([^)]+\)/g)]
-    .map((match) => match[1].trim())
+  return parseMarkdownLinks(markdown)
+    .filter((link) => !isIdentityLink(link.destination))
+    .map((link) => link.label.trim())
     .filter((label) => {
       if (/\p{Script=Han}/u.test(label) || /^(?:https?|www\.)/i.test(label)) {
         return false;
