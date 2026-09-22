@@ -178,7 +178,7 @@ function markdownSignature(markdown) {
       .sort(),
     codeFences: (markdown.match(/^```/gm) ?? []).length,
     inlineCodeMarkers: (markdown.match(/(?<!`)`(?!`)/g) ?? []).length,
-    boldMarkers: (markdown.match(/\*\*/g) ?? []).length,
+    boldMarkers: (markdown.match(/(?<!\*)\*\*(?!\*)/g) ?? []).length,
     thematicBreaks: (markdown.match(/^---$/gm) ?? []).length,
   };
 }
@@ -224,7 +224,7 @@ function parseMarkdownLinks(markdown) {
 function removeAddedInlineCodeMarkers(markdown) {
   return markdown
     .replace(/(?<!`)`{1,2}([^`\n]+)`{1,2}(?!`)/g, "$1")
-    .replace(/\*\*/g, "");
+    .replace(/(?<!\*)\*\*(?!\*)/g, "");
 }
 
 function localizeReaderFacingMetrics(markdown) {
@@ -328,7 +328,7 @@ function protectMarkdown(markdown) {
   );
   protectedMarkdown = protectMarkdownLinks(protectedMarkdown, protect);
   protectedMarkdown = protectedMarkdown.replace(
-    /\*\*/g,
+    /(?<!\*)\*\*(?!\*)/g,
     (value) => protect({ kind: "exact", value }),
   );
   protectedMarkdown = protectedMarkdown.replace(

@@ -121,6 +121,13 @@ test("validateTranslation rejects changed URLs and untranslated prose", () => {
   assert.ok(errors.includes("too much reader-facing English remains"));
 });
 
+test("validateTranslation does not treat censored words as bold Markdown", () => {
+  const source = "GitHub needs to get their s*** together.";
+  const translation = "GitHub 真该把这些破事处理好了。";
+
+  assert.deepEqual(validateTranslation(source, translation), []);
+});
+
 test("visibleLanguageRatio ignores URLs and code", () => {
   const ratio = visibleLanguageRatio(
     "这是自然的中文内容，请查看 [GitHub](https://github.com/example/project) 并运行 `npm test`。",
