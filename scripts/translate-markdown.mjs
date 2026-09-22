@@ -368,8 +368,27 @@ function assertProtectedTokens(markdown, protections) {
   }
 }
 
-function splitMarkdownForTranslation(markdown, maxCharacters = 12_000, maxTokens = 48) {
-  const parts = markdown.split(/(\n{2,})/);
+function findTopLevelProtections(protections) {
+  const nestedTokens = new Set();
+  for (const protection of protections) {
+    const protectedContent = [
+      protection.value,
+      protection.label,
+      protection.destination,
+    ]
+      .filter((value) => typeof value === "string")
+      .join("\n");
+    for (const match of protectedContent.matchAll(/VIBEWATCHPROTECTEDTOKEN\d{6}/g)) {
+      nestedTokens.add(match[0]);
+    }
+  }
+  return protections.filter(({ token }) => !nestedTokens.has(token));
+}
+
+function splitMarkdownForTranslation(markdown, maxCharacters = 8_000, maxTokens = 24) {
+  const parts = markdown.split(
+    /(?<=\n)|(?<=[.!?;:,，。！？；：])(?=\s)/,
+  );
   const chunks = [];
   let current = "";
   let currentTokens = 0;
@@ -393,10 +412,57 @@ function splitMarkdownForTranslation(markdown, maxCharacters = 12_000, maxTokens
   return chunks;
 }
 
+async function requestValidatedProtectedMarkdown(
+  client,
+  {
+    modelConfig,
+    systemPrompt,
+    prompt,
+    source,
+    protections,
+    phase,
+    maxAttempts = 3,
+  },
+) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const result = stripAddedMarkdownLinks(
+        normalizeProtectedTokenWrappers(
+          removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+            ...modelConfig,
+            systemPrompt,
+            prompt,
+          })),
+          protections,
+        ),
+        protections,
+      );
+      assertProtectedTokens(result, protections);
+      const errors = validateTranslation(source, result).filter(
+        (error) => error !== "too much reader-facing English remains",
+      );
+      if (errors.length > 0) {
+        throw new Error(`${phase} validation failed: ${errors.join(", ")}`);
+      }
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) {
+        console.warn(
+          `${phase} chunk attempt ${attempt} failed with ${modelConfig.model}: ${error.message}; retrying`,
+        );
+      }
+    }
+  }
+  throw lastError;
+}
+
 function restoreProtectedMarkdown(markdown, protections, translatedLabels = new Map()) {
-  assertProtectedTokens(markdown, protections);
+  const topLevelProtections = findTopLevelProtections(protections);
+  assertProtectedTokens(markdown, topLevelProtections);
   let restored = markdown;
-  for (const protection of protections) {
+  for (const protection of [...protections].reverse()) {
     const { token } = protection;
     const value =
       protection.kind === "link"
@@ -587,45 +653,42 @@ Return strict JSON only with this shape: {"translations":[{"source":"exact input
 
 async function translateAndReview(client, source, draftModelConfig, reviewModelConfig) {
   const { protectedMarkdown: protectedSource, protections } = protectMarkdown(source);
+  const topLevelProtections = findTopLevelProtections(protections);
   const reviewedChunks = [];
   for (const protectedChunk of splitMarkdownForTranslation(protectedSource)) {
     const chunkProtections = protections.filter(({ token }) =>
       protectedChunk.includes(token),
     );
-    const draft = stripAddedMarkdownLinks(
-      normalizeProtectedTokenWrappers(
-        removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-          ...draftModelConfig,
-          systemPrompt: TRANSLATOR_PROMPT,
-          prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>`,
-        })),
-        chunkProtections,
-      ),
-      chunkProtections,
-    );
-    assertProtectedTokens(draft, chunkProtections);
-    const draftErrors = validateTranslation(protectedChunk, draft).filter(
-      (error) => error !== "too much reader-facing English remains",
-    );
-    if (draftErrors.length > 0) {
-      throw new Error(`draft validation failed: ${draftErrors.join(", ")}`);
-    }
-
-    const reviewed = stripAddedMarkdownLinks(
-      normalizeProtectedTokenWrappers(
-        removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-          ...reviewModelConfig,
-          systemPrompt: REVIEWER_PROMPT,
-          prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
-        })),
-        chunkProtections,
-      ),
-      chunkProtections,
-    );
-    assertProtectedTokens(reviewed, chunkProtections);
+    const draft = await requestValidatedProtectedMarkdown(client, {
+      modelConfig: draftModelConfig,
+      systemPrompt: TRANSLATOR_PROMPT,
+      prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>`,
+      source: protectedChunk,
+      protections: chunkProtections,
+      phase: "draft",
+    });
+    const reviewed = await requestValidatedProtectedMarkdown(client, {
+      modelConfig: reviewModelConfig,
+      systemPrompt: REVIEWER_PROMPT,
+      prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
+      source: protectedChunk,
+      protections: chunkProtections,
+      phase: "review",
+    });
     reviewedChunks.push(reviewed);
   }
-  let finalTranslation = localizeReaderFacingMetrics(reviewedChunks.join(""));
+  const combinedReview = reviewedChunks.join("");
+  try {
+    assertProtectedTokens(combinedReview, topLevelProtections);
+  } catch (error) {
+    throw new Error(`combined chunks failed: ${error.message}`);
+  }
+  let finalTranslation = localizeReaderFacingMetrics(combinedReview);
+  try {
+    assertProtectedTokens(finalTranslation, topLevelProtections);
+  } catch (error) {
+    throw new Error(`combined review failed: ${error.message}`);
+  }
   const protectedReviewErrors = validateTranslation(protectedSource, finalTranslation);
   if (protectedReviewErrors.length > 0) {
     const actualSignature = markdownSignature(finalTranslation);

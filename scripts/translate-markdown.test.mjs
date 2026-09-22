@@ -149,6 +149,21 @@ test("protectMarkdown round-trips URLs and code exactly", () => {
   );
 });
 
+test("protectMarkdown restores inline code nested inside a link label", () => {
+  const markdown = "Read [the `agent-reliability` guide](https://example.com/guide).";
+  const { protectedMarkdown, protections } = protectMarkdown(markdown);
+  const link = protections.find((protection) => protection.kind === "link");
+
+  assert.equal(
+    restoreProtectedMarkdown(
+      protectedMarkdown,
+      protections,
+      new Map([[link.token, "阅读 VIBEWATCHPROTECTEDTOKEN000000 指南"]]),
+    ),
+    "Read [阅读 `agent-reliability` 指南](https://example.com/guide).",
+  );
+});
+
 test("isIdentityLink recognizes user profile links", () => {
   assert.equal(
     isIdentityLink("https://news.ycombinator.com/user?id=forks"),
