@@ -368,6 +368,31 @@ function assertProtectedTokens(markdown, protections) {
   }
 }
 
+function splitMarkdownForTranslation(markdown, maxCharacters = 12_000, maxTokens = 48) {
+  const parts = markdown.split(/(\n{2,})/);
+  const chunks = [];
+  let current = "";
+  let currentTokens = 0;
+
+  for (const part of parts) {
+    const partTokens = (part.match(/VIBEWATCHPROTECTEDTOKEN\d{6}/g) ?? []).length;
+    const exceedsLimit =
+      current.length > 0 &&
+      (current.length + part.length > maxCharacters ||
+        currentTokens + partTokens > maxTokens);
+    if (exceedsLimit) {
+      chunks.push(current);
+      current = "";
+      currentTokens = 0;
+    }
+    current += part;
+    currentTokens += partTokens;
+  }
+  if (current) chunks.push(current);
+
+  return chunks;
+}
+
 function restoreProtectedMarkdown(markdown, protections, translatedLabels = new Map()) {
   assertProtectedTokens(markdown, protections);
   let restored = markdown;
@@ -401,39 +426,42 @@ async function translateProtectedLabels(client, protections, modelConfig) {
     }));
   if (labels.length === 0) return new Map();
 
-  const response = await requestMarkdown(client, {
-    ...modelConfig,
-    systemPrompt: `Translate Markdown link labels and image alt text into natural Simplified Chinese.
+  const translations = new Map();
+  for (let index = 0; index < labels.length; index += 40) {
+    const batch = labels.slice(index, index + 40);
+    const response = await requestMarkdown(client, {
+      ...modelConfig,
+      systemPrompt: `Translate Markdown link labels and image alt text into natural Simplified Chinese.
 The text must read like professionally edited native Chinese.
 Preserve genuine usernames, people, companies, products, models, repositories, acronyms, and code names unchanged.
 Return every input token exactly once. Return strict JSON only:
 {"translations":[{"token":"VIBEWATCHPROTECTEDTOKEN000000","translation":"..."}]}`,
-    prompt: JSON.stringify({ labels }),
-  });
-  const parsed = JSON.parse(response.replace(/^```json\s*|\s*```$/g, ""));
-  if (!Array.isArray(parsed.translations) || parsed.translations.length !== labels.length) {
-    throw new Error("protected-label translation returned an invalid list");
-  }
-
-  const translations = new Map();
-  for (const item of parsed.translations) {
-    const translation =
-      typeof item.translation === "string"
-        ? item.translation
-            .replace(/\[/g, "［")
-            .replace(/\]/g, "］")
-            .replace(/[\r\n]+/g, " ")
-            .trim()
-        : item.translation;
-    if (
-      typeof item.token !== "string" ||
-      typeof translation !== "string" ||
-      translation.length === 0 ||
-      translations.has(item.token)
-    ) {
-      throw new Error(`invalid protected-label translation for ${item.token}`);
+      prompt: JSON.stringify({ labels: batch }),
+    });
+    const parsed = JSON.parse(response.replace(/^```json\s*|\s*```$/g, ""));
+    if (!Array.isArray(parsed.translations) || parsed.translations.length !== batch.length) {
+      throw new Error("protected-label translation returned an invalid list");
     }
-    translations.set(item.token, translation);
+
+    for (const item of parsed.translations) {
+      const translation =
+        typeof item.translation === "string"
+          ? item.translation
+              .replace(/\[/g, "［")
+              .replace(/\]/g, "］")
+              .replace(/[\r\n]+/g, " ")
+              .trim()
+          : item.translation;
+      if (
+        typeof item.token !== "string" ||
+        typeof translation !== "string" ||
+        translation.length === 0 ||
+        translations.has(item.token)
+      ) {
+        throw new Error(`invalid protected-label translation for ${item.token}`);
+      }
+      translations.set(item.token, translation);
+    }
   }
   for (const label of labels) {
     if (!translations.has(label.token)) {
@@ -559,36 +587,45 @@ Return strict JSON only with this shape: {"translations":[{"source":"exact input
 
 async function translateAndReview(client, source, draftModelConfig, reviewModelConfig) {
   const { protectedMarkdown: protectedSource, protections } = protectMarkdown(source);
-  const draft = stripAddedMarkdownLinks(
-    normalizeProtectedTokenWrappers(
-      removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-        ...draftModelConfig,
-        systemPrompt: TRANSLATOR_PROMPT,
-        prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>`,
-      })),
-      protections,
-    ),
-    protections,
-  );
-  assertProtectedTokens(draft, protections);
-  const draftErrors = validateTranslation(protectedSource, draft);
-  if (draftErrors.length > 0) {
-    throw new Error(`draft validation failed: ${draftErrors.join(", ")}`);
-  }
+  const reviewedChunks = [];
+  for (const protectedChunk of splitMarkdownForTranslation(protectedSource)) {
+    const chunkProtections = protections.filter(({ token }) =>
+      protectedChunk.includes(token),
+    );
+    const draft = stripAddedMarkdownLinks(
+      normalizeProtectedTokenWrappers(
+        removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+          ...draftModelConfig,
+          systemPrompt: TRANSLATOR_PROMPT,
+          prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>`,
+        })),
+        chunkProtections,
+      ),
+      chunkProtections,
+    );
+    assertProtectedTokens(draft, chunkProtections);
+    const draftErrors = validateTranslation(protectedChunk, draft).filter(
+      (error) => error !== "too much reader-facing English remains",
+    );
+    if (draftErrors.length > 0) {
+      throw new Error(`draft validation failed: ${draftErrors.join(", ")}`);
+    }
 
-  const reviewed = stripAddedMarkdownLinks(
-    normalizeProtectedTokenWrappers(
-      removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-        ...reviewModelConfig,
-        systemPrompt: REVIEWER_PROMPT,
-        prompt: `<source_markdown>\n${protectedSource}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
-      })),
-      protections,
-    ),
-    protections,
-  );
-  assertProtectedTokens(reviewed, protections);
-  let finalTranslation = localizeReaderFacingMetrics(reviewed);
+    const reviewed = stripAddedMarkdownLinks(
+      normalizeProtectedTokenWrappers(
+        removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+          ...reviewModelConfig,
+          systemPrompt: REVIEWER_PROMPT,
+          prompt: `<source_markdown>\n${protectedChunk}\n</source_markdown>\n\n<draft_translation>\n${draft}\n</draft_translation>`,
+        })),
+        chunkProtections,
+      ),
+      chunkProtections,
+    );
+    assertProtectedTokens(reviewed, chunkProtections);
+    reviewedChunks.push(reviewed);
+  }
+  let finalTranslation = localizeReaderFacingMetrics(reviewedChunks.join(""));
   const protectedReviewErrors = validateTranslation(protectedSource, finalTranslation);
   if (protectedReviewErrors.length > 0) {
     const actualSignature = markdownSignature(finalTranslation);
@@ -768,6 +805,7 @@ export {
   stripAddedMarkdownLinks,
   removeAddedInlineCodeMarkers,
   restoreProtectedMarkdown,
+  splitMarkdownForTranslation,
   parseArgs,
   validateTranslation,
   visibleLanguageRatio,

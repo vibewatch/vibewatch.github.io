@@ -13,6 +13,7 @@ import {
   protectMarkdown,
   removeAddedInlineCodeMarkers,
   restoreProtectedMarkdown,
+  splitMarkdownForTranslation,
   stripAddedMarkdownLinks,
   untranslatedLinkLabels,
   validateTranslation,
@@ -164,6 +165,23 @@ test("restoreProtectedMarkdown rejects missing tokens", () => {
   assert.throws(
     () => restoreProtectedMarkdown("运行测试。", protections),
     /occurred 0 times instead of once/,
+  );
+});
+
+test("splitMarkdownForTranslation round-trips content and limits token batches", () => {
+  const markdown = Array.from(
+    { length: 7 },
+    (_, index) =>
+      `Paragraph ${index} VIBEWATCHPROTECTEDTOKEN${String(index).padStart(6, "0")}`,
+  ).join("\n\n");
+  const chunks = splitMarkdownForTranslation(markdown, 10_000, 3);
+
+  assert.equal(chunks.join(""), markdown);
+  assert.deepEqual(
+    chunks.map(
+      (chunk) => (chunk.match(/VIBEWATCHPROTECTEDTOKEN\d{6}/g) ?? []).length,
+    ),
+    [3, 3, 1],
   );
 });
 
