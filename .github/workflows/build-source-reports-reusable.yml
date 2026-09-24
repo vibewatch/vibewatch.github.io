@@ -14,7 +14,7 @@ on:
       model:
         description: Copilot model to use for report generation.
         required: false
-        default: gpt-5.4
+        default: gpt-6-luna
         type: string
     secrets:
       HARVESTER_PAT:
@@ -51,7 +51,7 @@ jobs:
       - name: Select model effort
         id: copilot-model
         env:
-          COPILOT_MODEL: ${{ inputs.model || 'gpt-5.4' }}
+          COPILOT_MODEL: ${{ inputs.model || 'gpt-6-luna' }}
         run: |
           case "$COPILOT_MODEL" in
             claude-opus-4.6|claude-sonnet-4.6)
@@ -59,6 +59,12 @@ jobs:
               ;;
             gpt-5.4|gpt-5.5)
               COPILOT_EFFORT=xhigh
+              ;;
+            gpt-6-luna|gpt-6-sol|grok-4.7)
+              COPILOT_EFFORT=xhigh
+              ;;
+            gpt-5.6-terra)
+              COPILOT_EFFORT=high
               ;;
             *)
               echo "::error::Unsupported Copilot model: $COPILOT_MODEL"

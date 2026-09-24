@@ -81,7 +81,7 @@ Use a fine-grained GitHub PAT with **Actions: Read & Write** access on `vibewatc
 The English source workflows (`build-reddit-reports`, `build-twitter-reports`, `build-hackernews-reports`, `build-youtube-reports`) call `build-source-reports-reusable.yml` with source-specific inputs. The shared workflow follows this pattern:
 
 1. Fetch raw JSON data collected from the source platform.
-2. Generate or translate Markdown reports using **Copilot CLI**.
+2. Generate Markdown reports using **Copilot CLI**, defaulting to the cost-efficient `gpt-6-luna` model. Manual runs can select balanced or higher-capability alternatives.
 3. Copy the new English Markdown files into this repo's `docs/` directory, excluding `.zh.md` translations.
 4. Push to `main`, which triggers the `deploy-site.yml` deploy workflow.
 

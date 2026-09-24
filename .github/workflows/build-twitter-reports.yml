@@ -9,8 +9,12 @@ on:
         description: Copilot model to use for report generation.
         required: false
         type: choice
-        default: gpt-5.4
+        default: gpt-6-luna
         options:
+          - gpt-6-luna
+          - gpt-6-sol
+          - gpt-5.6-terra
+          - grok-4.7
           - claude-opus-4.6
           - claude-sonnet-4.6
           - gpt-5.4
@@ -30,7 +34,7 @@ jobs:
     with:
       source_key: twitter
       source_label: Twitter
-      model: ${{ inputs.model || 'gpt-5.4' }}
+      model: ${{ inputs.model || 'gpt-6-luna' }}
     secrets:
       HARVESTER_PAT: ${{ secrets.HARVESTER_PAT }}
       COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
