@@ -14,13 +14,14 @@ permissions:
   issues: read
   pull-requests: read
 
-engine:
-  id: copilot
-  model: gpt-5.4-mini
+engine: copilot
+model: gpt-5.6-luna
 
 network: defaults
 
 tools:
+  bash: false
+  cli-proxy: false
   github:
     # If in a public repo, setting `lockdown: false` allows
     # reading issues, pull requests and comments from 3rd-parties
