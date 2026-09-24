@@ -16,7 +16,7 @@ permissions:
 
 engine:
   id: copilot
-  model: gpt-6-luna
+  model: gpt-5.4-mini
 
 network: defaults
 
