@@ -15,6 +15,7 @@ import {
   restoreProtectedMarkdown,
   splitMarkdownForTranslation,
   stripAddedMarkdownLinks,
+  stripAddedThematicBreaks,
   untranslatedLinkLabels,
   validateTranslation,
   visibleLanguageRatio,
@@ -258,6 +259,15 @@ test("stripAddedMarkdownLinks discards invented destinations", () => {
       [],
     ),
     "参见额外说明和正文。",
+  );
+});
+
+test("stripAddedThematicBreaks removes model-invented separators", () => {
+  assert.equal(
+    stripAddedThematicBreaks(
+      "第一段。\n\n---\n\nVIBEWATCHPROTECTEDTOKEN000001\n\n第二段。\n",
+    ),
+    "第一段。\n\n\nVIBEWATCHPROTECTEDTOKEN000001\n\n第二段。\n",
   );
 });
 

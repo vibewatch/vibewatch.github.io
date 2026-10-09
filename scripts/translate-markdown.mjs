@@ -299,6 +299,10 @@ function stripAddedMarkdownLinks(markdown, protections) {
   return `${result}${markdown.slice(cursor)}`;
 }
 
+function stripAddedThematicBreaks(markdown) {
+  return markdown.replace(/^---[ \t]*\r?\n?/gm, "");
+}
+
 function visibleLanguageRatio(markdown) {
   const visibleText = markdown
     .replace(/VIBEWATCHPROTECTEDTOKEN\d{6}/g, "")
@@ -432,13 +436,15 @@ async function requestValidatedProtectedMarkdown(
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       const result = stripAddedMarkdownLinks(
-        normalizeProtectedTokenWrappers(
-          removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-            ...modelConfig,
-            systemPrompt,
-            prompt,
-          })),
-          protections,
+        stripAddedThematicBreaks(
+          normalizeProtectedTokenWrappers(
+            removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+              ...modelConfig,
+              systemPrompt,
+              prompt,
+            })),
+            protections,
+          ),
         ),
         protections,
       );
@@ -871,6 +877,7 @@ export {
   assertProtectedTokens,
   normalizeProtectedTokenWrappers,
   stripAddedMarkdownLinks,
+  stripAddedThematicBreaks,
   removeAddedInlineCodeMarkers,
   restoreProtectedMarkdown,
   splitMarkdownForTranslation,
