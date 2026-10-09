@@ -323,6 +323,10 @@ function protectMarkdown(markdown) {
     (value) => protect({ kind: "exact", value }),
   );
   protectedMarkdown = protectedMarkdown.replace(
+    /^---$/gm,
+    (value) => protect({ kind: "exact", value }),
+  );
+  protectedMarkdown = protectedMarkdown.replace(
     /(?<!`)`[^`\n]+`(?!`)/g,
     (value) => protect({ kind: "exact", value }),
   );

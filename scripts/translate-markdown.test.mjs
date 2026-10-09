@@ -156,6 +156,14 @@ test("protectMarkdown round-trips URLs and code exactly", () => {
   );
 });
 
+test("protectMarkdown preserves thematic breaks exactly", () => {
+  const markdown = "# Report\n\nIntroduction.\n\n---\n\n## Details\n";
+  const { protectedMarkdown, protections } = protectMarkdown(markdown);
+
+  assert.doesNotMatch(protectedMarkdown, /^---$/m);
+  assert.equal(restoreProtectedMarkdown(protectedMarkdown, protections), markdown);
+});
+
 test("protectMarkdown restores inline code nested inside a link label", () => {
   const markdown = "Read [the `agent-reliability` guide](https://example.com/guide).";
   const { protectedMarkdown, protections } = protectMarkdown(markdown);
