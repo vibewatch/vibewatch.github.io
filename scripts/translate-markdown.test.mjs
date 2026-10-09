@@ -9,6 +9,7 @@ import {
   isIdentityLink,
   localizeReaderFacingMetrics,
   normalizeProtectedTokenWrappers,
+  normalizeThematicBreakTokens,
   parseArgs,
   protectMarkdown,
   removeAddedInlineCodeMarkers,
@@ -163,6 +164,21 @@ test("protectMarkdown preserves thematic breaks exactly", () => {
 
   assert.doesNotMatch(protectedMarkdown, /^---$/m);
   assert.equal(restoreProtectedMarkdown(protectedMarkdown, protections), markdown);
+});
+
+test("normalizeThematicBreakTokens restores separators moved inline", () => {
+  const markdown = "Before.\n\n---\n\nAfter.";
+  const { protectedMarkdown, protections } = protectMarkdown(markdown);
+  const thematicBreak = protections.find(
+    (protection) => protection.kind === "thematic-break",
+  );
+  const movedInline = protectedMarkdown
+    .replace(/\n+/g, " ")
+    .replace(thematicBreak.token, `text ${thematicBreak.token} text`);
+  const normalized = normalizeThematicBreakTokens(movedInline, protections);
+  const restored = restoreProtectedMarkdown(normalized, protections);
+
+  assert.equal((restored.match(/^---$/gm) ?? []).length, 1);
 });
 
 test("protectMarkdown restores inline code nested inside a link label", () => {

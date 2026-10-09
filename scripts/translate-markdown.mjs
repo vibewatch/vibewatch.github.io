@@ -303,6 +303,19 @@ function stripAddedThematicBreaks(markdown) {
   return markdown.replace(/^---[ \t]*\r?\n?/gm, "");
 }
 
+function normalizeThematicBreakTokens(markdown, protections) {
+  let normalized = markdown;
+  for (const { token, kind } of protections) {
+    if (kind !== "thematic-break") continue;
+    const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    normalized = normalized.replace(
+      new RegExp(`[ \\t]*${escapedToken}[ \\t]*`, "g"),
+      `\n\n${token}\n\n`,
+    );
+  }
+  return normalized;
+}
+
 function visibleLanguageRatio(markdown) {
   const visibleText = markdown
     .replace(/VIBEWATCHPROTECTEDTOKEN\d{6}/g, "")
@@ -328,7 +341,7 @@ function protectMarkdown(markdown) {
   );
   protectedMarkdown = protectedMarkdown.replace(
     /^---$/gm,
-    (value) => protect({ kind: "exact", value }),
+    (value) => protect({ kind: "thematic-break", value }),
   );
   protectedMarkdown = protectedMarkdown.replace(
     /(?<!`)`[^`\n]+`(?!`)/g,
@@ -437,12 +450,15 @@ async function requestValidatedProtectedMarkdown(
     try {
       const result = stripAddedMarkdownLinks(
         stripAddedThematicBreaks(
-          normalizeProtectedTokenWrappers(
-            removeAddedInlineCodeMarkers(await requestMarkdown(client, {
-              ...modelConfig,
-              systemPrompt,
-              prompt,
-            })),
+          normalizeThematicBreakTokens(
+            normalizeProtectedTokenWrappers(
+              removeAddedInlineCodeMarkers(await requestMarkdown(client, {
+                ...modelConfig,
+                systemPrompt,
+                prompt,
+              })),
+              protections,
+            ),
             protections,
           ),
         ),
@@ -876,6 +892,7 @@ export {
   protectMarkdown,
   assertProtectedTokens,
   normalizeProtectedTokenWrappers,
+  normalizeThematicBreakTokens,
   stripAddedMarkdownLinks,
   stripAddedThematicBreaks,
   removeAddedInlineCodeMarkers,
