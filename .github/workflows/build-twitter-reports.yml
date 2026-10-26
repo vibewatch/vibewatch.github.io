@@ -30,5 +30,5 @@ jobs:
       model: ${{ inputs.model || 'gpt-6-luna' }}
     secrets:
       HARVESTER_PAT: ${{ secrets.HARVESTER_PAT }}
-      COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
+      COPILOT_PAT: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       WEBSITE_PAT: ${{ secrets.WEBSITE_PAT }}

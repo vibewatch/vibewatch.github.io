@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:scheduler": "node --test cloudflare/worker.test.js",
     "test:translation": "node --test scripts/translate-markdown.test.mjs",
     "translate:reports": "node scripts/translate-markdown.mjs"
   },
