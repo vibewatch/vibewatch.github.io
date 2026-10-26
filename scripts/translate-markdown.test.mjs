@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -17,20 +18,21 @@ import {
   splitMarkdownForTranslation,
   stripAddedMarkdownLinks,
   stripAddedThematicBreaks,
+  translateFile,
   untranslatedLinkLabels,
   validateTranslation,
   visibleLanguageRatio,
 } from "./translate-markdown.mjs";
 
-test("parseArgs uses the best quality-cost default model", () => {
+test("parseArgs uses GPT-6 Luna for drafts, reviews, and higher-effort retries", () => {
   assert.deepEqual(parseArgs([]), {
     root: "reports",
-    model: "gpt-5.6-luna",
-    effort: "none",
-    reviewModel: "gpt-5.4",
+    model: "gpt-6-luna",
+    effort: "low",
+    reviewModel: "gpt-6-luna",
     reviewEffort: "low",
-    fallbackModel: "gpt-5.4",
-    fallbackEffort: "low",
+    fallbackModel: "gpt-6-luna",
+    fallbackEffort: "medium",
     concurrency: 2,
     force: false,
     resume: false,
@@ -38,6 +40,62 @@ test("parseArgs uses the best quality-cost default model", () => {
     outputRoot: null,
   });
 });
+
+for (const retry of [false, true]) {
+  test(`translation records same-model fallback accurately: retry=${retry}`, async (t) => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "luna-translation-"));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    const file = {
+      sourcePath: path.join(root, "source.md"),
+      translationPath: path.join(root, "source.zh.md"),
+    };
+    await fs.writeFile(file.sourcePath, "Hello world.\n");
+    const sessions = [];
+    const client = {
+      async createSession(config) {
+        sessions.push(config);
+        return {
+          async sendAndWait() {
+            if (retry && config.reasoningEffort === "low") {
+              throw new Error("Primary translation failed");
+            }
+            return { data: { content: "你好，世界。" } };
+          },
+          async disconnect() {},
+        };
+      },
+    };
+    const result = await translateFile(client, file, parseArgs([]));
+    assert.equal(result.usedFallback, retry);
+    assert(sessions.every((session) => session.model === "gpt-6-luna"));
+    assert.equal(sessions.some((session) => session.reasoningEffort === "medium"), retry);
+    assert.equal(await fs.readFile(file.translationPath, "utf8"), "你好，世界。\n");
+  });
+}
+
+for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-chinese.yml"]) {
+  test(`workflow rejects retired models: ${file}`, async (t) => {
+    const workflow = await fs.readFile(new URL(`../.github/workflows/${file}`, import.meta.url), "utf8");
+    const match = workflow.match(/      - name: Select model effort[\s\S]*?        run: \|\n([\s\S]*?)(?=\n      - name:)/);
+    assert(match);
+    const script = match[1].replace(/^          /gm, "");
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "luna-workflow-"));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    for (const [index, model] of ["gpt-6-luna", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-6-sol"].entries()) {
+      const output = path.join(root, `output-${index}`);
+      const result = spawnSync("bash", ["-e", "-c", script], {
+        encoding: "utf8",
+        env: { ...process.env, COPILOT_MODEL: model, GITHUB_OUTPUT: output },
+      });
+      assert.equal(result.status, index === 0 ? 0 : 1, result.stderr);
+      if (index === 0) {
+        assert.match(await fs.readFile(output, "utf8"), /^model=gpt-6-luna$/m);
+      } else {
+        assert.match(result.stdout, /Unsupported Copilot model/);
+      }
+    }
+  });
+}
 
 test("findMissingTranslations excludes existing Chinese files", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "translations-"));

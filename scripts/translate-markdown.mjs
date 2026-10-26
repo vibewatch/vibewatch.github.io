@@ -40,12 +40,12 @@ Given an English source and a Chinese draft, return a corrected Simplified-Chine
 function parseArgs(argv) {
   const options = {
     root: "reports",
-    model: "gpt-5.6-luna",
-    effort: "none",
-    reviewModel: "gpt-5.4",
+    model: "gpt-6-luna",
+    effort: "low",
+    reviewModel: "gpt-6-luna",
     reviewEffort: "low",
-    fallbackModel: "gpt-5.4",
-    fallbackEffort: "low",
+    fallbackModel: "gpt-6-luna",
+    fallbackEffort: "medium",
     concurrency: 2,
     force: false,
     resume: false,
@@ -764,7 +764,7 @@ async function translateFile(client, file, options) {
   );
   const failures = [];
 
-  for (const attempt of attempts) {
+  for (const [attemptIndex, attempt] of attempts.entries()) {
     try {
       console.log(
         `Translating ${file.sourcePath} with ${attempt.draft.model} (${attempt.draft.effort}), reviewed by ${attempt.review.model} (${attempt.review.effort})`,
@@ -783,6 +783,7 @@ async function translateFile(client, file, options) {
         ...file,
         model: attempt.draft.model,
         reviewModel: attempt.review.model,
+        usedFallback: attemptIndex > 0,
       };
     } catch (error) {
       failures.push(
@@ -853,11 +854,7 @@ async function main() {
       .filter((result) => result.status === "fulfilled")
       .map((result) => result.value);
     const failures = settled.filter((result) => result.status === "rejected");
-    const fallbackCount = results.filter(
-      (result) =>
-        result.model === options.fallbackModel &&
-        result.reviewModel === options.fallbackModel,
-    ).length;
+    const fallbackCount = results.filter((result) => result.usedFallback).length;
     console.log(
       `Created ${results.length} translation(s); ${fallbackCount} required full ${options.fallbackModel} fallback.`,
     );
@@ -899,6 +896,7 @@ export {
   restoreProtectedMarkdown,
   splitMarkdownForTranslation,
   parseArgs,
+  translateFile,
   validateTranslation,
   visibleLanguageRatio,
   untranslatedLinkLabels,

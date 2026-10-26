@@ -12,13 +12,6 @@ on:
         default: gpt-6-luna
         options:
           - gpt-6-luna
-          - gpt-6-sol
-          - gpt-5.6-terra
-          - grok-4.7
-          - claude-opus-4.6
-          - claude-sonnet-4.6
-          - gpt-5.4
-          - gpt-5.5
 
 permissions:
   contents: read

@@ -6,14 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       model:
-        description: Copilot SDK model to use for the low-cost first translation pass.
+        description: Copilot SDK model to use for translation.
         required: false
         type: choice
-        default: gpt-5.6-luna
+        default: gpt-6-luna
         options:
-          - gpt-5.6-luna
-          - gpt-5.4-mini
-          - gpt-5.4
+          - gpt-6-luna
 
 permissions:
   contents: read
@@ -57,13 +55,10 @@ jobs:
       - name: Select model effort
         id: copilot-model
         env:
-          COPILOT_MODEL: ${{ inputs.model || 'gpt-5.6-luna' }}
+          COPILOT_MODEL: ${{ inputs.model || 'gpt-6-luna' }}
         run: |
           case "$COPILOT_MODEL" in
-            gpt-5.6-luna)
-              COPILOT_EFFORT=none
-              ;;
-            gpt-5.4-mini|gpt-5.4)
+            gpt-6-luna)
               COPILOT_EFFORT=low
               ;;
             *)
@@ -83,10 +78,10 @@ jobs:
             --root ../harvester/reports \
             --model "${{ steps.copilot-model.outputs.model }}" \
             --effort "${{ steps.copilot-model.outputs.effort }}" \
-            --review-model gpt-5.4 \
+            --review-model gpt-6-luna \
             --review-effort low \
-            --fallback-model gpt-5.4 \
-            --fallback-effort low \
+            --fallback-model gpt-6-luna \
+            --fallback-effort medium \
             --concurrency 2
 
       - name: Detect new translations

@@ -15,7 +15,7 @@ permissions:
   pull-requests: read
 
 engine: copilot
-model: gpt-5.6-luna
+model: gpt-6-luna
 
 network: defaults
 
