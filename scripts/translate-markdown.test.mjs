@@ -28,11 +28,11 @@ test("parseArgs uses GPT-6 Luna for drafts, reviews, and higher-effort retries",
   assert.deepEqual(parseArgs([]), {
     root: "reports",
     model: "gpt-6-luna",
-    effort: "low",
+    effort: "medium",
     reviewModel: "gpt-6-luna",
-    reviewEffort: "low",
+    reviewEffort: "medium",
     fallbackModel: "gpt-6-luna",
-    fallbackEffort: "medium",
+    fallbackEffort: "high",
     concurrency: 2,
     force: false,
     resume: false,
@@ -56,7 +56,7 @@ for (const retry of [false, true]) {
         sessions.push(config);
         return {
           async sendAndWait() {
-            if (retry && config.reasoningEffort === "low") {
+            if (retry && config.reasoningEffort === "medium") {
               throw new Error("Primary translation failed");
             }
             return { data: { content: "你好，世界。" } };
@@ -68,7 +68,7 @@ for (const retry of [false, true]) {
     const result = await translateFile(client, file, parseArgs([]));
     assert.equal(result.usedFallback, retry);
     assert(sessions.every((session) => session.model === "gpt-6-luna"));
-    assert.equal(sessions.some((session) => session.reasoningEffort === "medium"), retry);
+    assert.equal(sessions.some((session) => session.reasoningEffort === "high"), retry);
     assert.equal(await fs.readFile(file.translationPath, "utf8"), "你好，世界。\n");
   });
 }
@@ -90,6 +90,10 @@ for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-c
       assert.equal(result.status, index === 0 ? 0 : 1, result.stderr);
       if (index === 0) {
         assert.match(await fs.readFile(output, "utf8"), /^model=gpt-6-luna$/m);
+        assert.match(
+          await fs.readFile(output, "utf8"),
+          new RegExp(`^effort=${file === "translate-reports-to-chinese.yml" ? "medium" : "xhigh"}$`, "m"),
+        );
       } else {
         assert.match(result.stdout, /Unsupported Copilot model/);
       }
@@ -107,7 +111,7 @@ test("translation workflow forwards small batch limits and preserves unlimited s
   const script = block.split("        run: |\n")[1]
     .replace(/^          /gm, "")
     .replace(/\$\{\{ steps\.copilot-model\.outputs\.model \}\}/g, "gpt-6-luna")
-    .replace(/\$\{\{ steps\.copilot-model\.outputs\.effort \}\}/g, "low");
+    .replace(/\$\{\{ steps\.copilot-model\.outputs\.effort \}\}/g, "medium");
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "translation-batch-"));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   for (const [index, limit] of ["", "5", "invalid"].entries()) {
@@ -121,6 +125,9 @@ test("translation workflow forwards small batch limits and preserves unlimited s
       await assert.rejects(fs.access(output));
     } else {
       const args = (await fs.readFile(output, "utf8")).trim().split("\n");
+      assert.equal(args[args.indexOf("--effort") + 1], "medium");
+      assert.equal(args[args.indexOf("--review-effort") + 1], "medium");
+      assert.equal(args[args.indexOf("--fallback-effort") + 1], "high");
       assert.equal(args.includes("--limit"), limit !== "");
       if (limit) assert.equal(args[args.indexOf("--limit") + 1], limit);
     }

@@ -64,7 +64,7 @@ jobs:
         run: |
           case "$COPILOT_MODEL" in
             gpt-6-luna)
-              COPILOT_EFFORT=low
+              COPILOT_EFFORT=medium
               ;;
             *)
               echo "::error::Unsupported Copilot model: $COPILOT_MODEL"
@@ -95,9 +95,9 @@ jobs:
             --model "${{ steps.copilot-model.outputs.model }}" \
             --effort "${{ steps.copilot-model.outputs.effort }}" \
             --review-model gpt-6-luna \
-            --review-effort low \
+            --review-effort medium \
             --fallback-model gpt-6-luna \
-            --fallback-effort medium \
+            --fallback-effort high \
             --concurrency 2 \
             "${batch_args[@]}"
 
