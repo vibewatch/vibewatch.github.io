@@ -5,6 +5,11 @@ on:
   #   - cron: '0 4 * * *'
   workflow_dispatch:
     inputs:
+      limit:
+        description: Maximum missing files to translate; leave blank for all.
+        required: false
+        type: string
+        default: ""
       model:
         description: Copilot SDK model to use for translation.
         required: false
@@ -75,7 +80,16 @@ jobs:
         working-directory: website
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
+          TRANSLATION_LIMIT: ${{ inputs.limit }}
         run: |
+          batch_args=()
+          if [ -n "$TRANSLATION_LIMIT" ]; then
+            if ! [[ "$TRANSLATION_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+              echo "::error::Translation limit must be a positive integer."
+              exit 1
+            fi
+            batch_args+=(--limit "$TRANSLATION_LIMIT")
+          fi
           node scripts/translate-markdown.mjs \
             --root ../harvester/reports \
             --model "${{ steps.copilot-model.outputs.model }}" \
@@ -84,7 +98,8 @@ jobs:
             --review-effort low \
             --fallback-model gpt-6-luna \
             --fallback-effort medium \
-            --concurrency 2
+            --concurrency 2 \
+            "${batch_args[@]}"
 
       - name: Detect new translations
         id: check-translations

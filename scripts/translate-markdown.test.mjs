@@ -97,6 +97,36 @@ for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-c
   });
 }
 
+test("translation workflow forwards small batch limits and preserves unlimited scheduled runs", async (t) => {
+  const workflow = await fs.readFile(
+    new URL("../.github/workflows/translate-reports-to-chinese.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /TRANSLATION_LIMIT: \$\{\{ inputs\.limit \}\}/);
+  const block = workflow.split(/^      - name: /m).find((block) => block.startsWith("Translate reports\n"));
+  const script = block.split("        run: |\n")[1]
+    .replace(/^          /gm, "")
+    .replace(/\$\{\{ steps\.copilot-model\.outputs\.model \}\}/g, "gpt-6-luna")
+    .replace(/\$\{\{ steps\.copilot-model\.outputs\.effort \}\}/g, "low");
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "translation-batch-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  for (const [index, limit] of ["", "5", "invalid"].entries()) {
+    const output = path.join(root, `args-${index}`);
+    const result = spawnSync("bash", ["-e", "-c", `node() { printf '%s\\n' "$@" > "$ARGUMENTS"; }\n${script}`], {
+      encoding: "utf8",
+      env: { ...process.env, TRANSLATION_LIMIT: limit, ARGUMENTS: output },
+    });
+    assert.equal(result.status, limit === "invalid" ? 1 : 0, result.stderr);
+    if (limit === "invalid") {
+      await assert.rejects(fs.access(output));
+    } else {
+      const args = (await fs.readFile(output, "utf8")).trim().split("\n");
+      assert.equal(args.includes("--limit"), limit !== "");
+      if (limit) assert.equal(args[args.indexOf("--limit") + 1], limit);
+    }
+  }
+});
+
 for (const scenario of ["mixed", "all-failed", "success"]) {
   test(`translation workflow publishes completed files before reporting failures: ${scenario}`, async (t) => {
     const workflow = await fs.readFile(
