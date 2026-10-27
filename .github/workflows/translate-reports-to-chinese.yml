@@ -70,6 +70,8 @@ jobs:
           echo "effort=$COPILOT_EFFORT" >> "$GITHUB_OUTPUT"
 
       - name: Translate reports
+        id: translation
+        continue-on-error: true
         working-directory: website
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
@@ -88,7 +90,7 @@ jobs:
         id: check-translations
         working-directory: harvester
         run: |
-          UNSTAGED=$(git status --porcelain reports/ | grep '\.zh\.md$' || true)
+          UNSTAGED=$(git status --porcelain --untracked-files=all reports/ | grep '\.zh\.md$' || true)
           if [ -n "$UNSTAGED" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
@@ -153,3 +155,9 @@ jobs:
 
             push_with_rebase_retry
           fi
+
+      - name: Report translation failures
+        if: ${{ !cancelled() && steps.translation.outcome == 'failure' }}
+        run: |
+          echo "::error::Some translations failed. Successfully translated files were published if the publication steps succeeded; see earlier logs for failed files."
+          exit 1

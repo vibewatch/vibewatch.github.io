@@ -97,6 +97,90 @@ for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-c
   });
 }
 
+for (const scenario of ["mixed", "all-failed", "success"]) {
+  test(`translation workflow publishes completed files before reporting failures: ${scenario}`, async (t) => {
+    const workflow = await fs.readFile(
+      new URL("../.github/workflows/translate-reports-to-chinese.yml", import.meta.url),
+      "utf8",
+    );
+    const blocks = workflow.split(/^      - name: /m).slice(1);
+    const step = (name) => {
+      const block = blocks.find((block) => block.startsWith(`${name}\n`));
+      assert(block, `Missing step: ${name}`);
+      return block;
+    };
+    const script = (name) => {
+      const body = step(name).split("        run: |\n")[1];
+      assert(body);
+      return body.replace(/^          /gm, "");
+    };
+    assert.match(step("Translate reports"), /^        id: translation$/m);
+    assert.match(step("Translate reports"), /^        continue-on-error: true$/m);
+    assert.match(
+      step("Report translation failures"),
+      /^        if: \$\{\{ !cancelled\(\) && steps\.translation\.outcome == 'failure' \}\}$/m,
+    );
+    assert(blocks.indexOf(step("Report translation failures")) > blocks.indexOf(step("Push docs to website")));
+    assert.doesNotMatch(step("Detect new translations"), /^        if:/m);
+    for (const name of ["Push translations to harvester", "Copy translations to website", "Push docs to website"]) {
+      assert.match(step(name), /^        if: steps\.check-translations\.outputs\.has_changes == 'true'$/m);
+    }
+
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "translation-publication-"));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    const run = (command, args, cwd = root) => {
+      const result = spawnSync(command, args, {
+        cwd,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          GITHUB_OUTPUT: path.join(root, "output"),
+          GIT_CONFIG_GLOBAL: "/dev/null",
+          GIT_CONFIG_NOSYSTEM: "1",
+        },
+      });
+      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      return result.stdout;
+    };
+    for (const repo of ["harvester", "website"]) {
+      const checkout = path.join(root, repo);
+      run("git", ["init", "--bare", `${repo}.git`]);
+      run("git", ["init", "-b", "main", repo]);
+      run("git", ["config", "user.name", "Fixture"], checkout);
+      run("git", ["config", "user.email", "fixture@example.invalid"], checkout);
+      await fs.writeFile(path.join(checkout, ".gitkeep"), "");
+      await fs.mkdir(path.join(checkout, repo === "harvester" ? "reports/topic" : "docs/topic"), { recursive: true });
+      run("git", ["add", "."], checkout);
+      run("git", ["commit", "-m", "Initialize fixture"], checkout);
+      run("git", ["remote", "add", "origin", path.join(root, `${repo}.git`)], checkout);
+      run("git", ["push", "-u", "origin", "main"], checkout);
+    }
+    const harvester = path.join(root, "harvester");
+    await fs.writeFile(path.join(harvester, "reports/topic/failed.md"), "# Untranslated source\n");
+    if (scenario !== "all-failed") {
+      await fs.writeFile(path.join(harvester, "reports/topic/complete.zh.md"), "Validated translation.\n");
+    }
+    run("bash", ["-e", "-o", "pipefail", "-c", script("Detect new translations")], harvester);
+    const output = await fs.readFile(path.join(root, "output"), "utf8");
+    assert.equal(output, `has_changes=${scenario !== "all-failed"}\n`);
+    if (scenario !== "all-failed") {
+      run("bash", ["-e", "-o", "pipefail", "-c", script("Push translations to harvester")], harvester);
+      run("bash", ["-e", "-o", "pipefail", "-c", script("Copy translations to website")]);
+      run("bash", ["-e", "-o", "pipefail", "-c", script("Push docs to website")], path.join(root, "website"));
+    }
+    for (const [repo, directory] of [["harvester", "reports"], ["website", "docs"]]) {
+      const files = run("git", ["--git-dir", path.join(root, `${repo}.git`), "ls-tree", "-r", "--name-only", "main"]);
+      assert.equal(files.includes(`${directory}/topic/complete.zh.md`), scenario !== "all-failed");
+      assert(!files.includes("failed"), files);
+    }
+    if (scenario !== "success") {
+      const result = spawnSync("bash", ["-e", "-c", script("Report translation failures")], { encoding: "utf8" });
+      assert.equal(result.status, 1);
+      assert.match(result.stdout, /::error::Some translations failed/);
+    }
+  });
+}
+
 test("findMissingTranslations excludes existing Chinese files", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "translations-"));
   await fs.mkdir(path.join(root, "topic"));
