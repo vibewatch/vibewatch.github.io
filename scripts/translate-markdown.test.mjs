@@ -73,6 +73,36 @@ for (const retry of [false, true]) {
   });
 }
 
+test("translation preserves heading and paragraph boundaries across trimmed chunk responses", async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "translation-chunks-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = {
+    sourcePath: path.join(root, "source.md"),
+    translationPath: path.join(root, "source.zh.md"),
+  };
+  const prefix = "# First\n\n";
+  const source = `${prefix}${"A".repeat(8_000 - prefix.length - 1)}\n## Second\n\nFinal paragraph.\n`;
+  const chunks = splitMarkdownForTranslation(source);
+  assert.equal(chunks.length, 2);
+  assert(chunks[1].startsWith("## Second"));
+  await fs.writeFile(file.sourcePath, source);
+  const client = {
+    async createSession() {
+      return {
+        async sendAndWait({ prompt }) {
+          const chunk = prompt.match(/<source_markdown>\n([\s\S]*?)\n<\/source_markdown>/)[1];
+          return { data: { content: chunk.replace(/[A-Za-z]+/g, "译文").trim() } };
+        },
+        async disconnect() {},
+      };
+    },
+  };
+  await translateFile(client, file, parseArgs([]));
+  const translation = await fs.readFile(file.translationPath, "utf8");
+  assert.deepEqual(validateTranslation(source, translation), []);
+  assert.match(translation, /译文\n## 译文\n\n译文 译文\.\n$/);
+});
+
 for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-chinese.yml"]) {
   test(`workflow rejects retired models: ${file}`, async (t) => {
     const workflow = await fs.readFile(new URL(`../.github/workflows/${file}`, import.meta.url), "utf8");

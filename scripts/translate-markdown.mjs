@@ -702,9 +702,11 @@ async function translateAndReview(client, source, draftModelConfig, reviewModelC
       protections: chunkProtections,
       phase: "review",
     });
-    reviewedChunks.push(reviewed);
+    const leadingWhitespace = protectedChunk.match(/^\s*/)[0];
+    const trailingWhitespace = protectedChunk.match(/\s*$/)[0];
+    reviewedChunks.push(`${leadingWhitespace}${reviewed.trim()}${trailingWhitespace}`);
   }
-  const combinedReview = reviewedChunks.join("");
+  const combinedReview = reviewedChunks.join("").trim();
   try {
     assertProtectedTokens(combinedReview, topLevelProtections);
   } catch (error) {
