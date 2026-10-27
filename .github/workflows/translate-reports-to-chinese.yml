@@ -72,7 +72,7 @@ jobs:
       - name: Translate reports
         working-directory: website
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT }}
         run: |
           node scripts/translate-markdown.mjs \
             --root ../harvester/reports \

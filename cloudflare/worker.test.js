@@ -64,9 +64,9 @@ for (const [workflow, time] of schedules) {
     );
     if (workflow.startsWith("build-")) {
       assert.match(source, /uses: \.\/\.github\/workflows\/build-source-reports-reusable.yml/);
-      assert.match(source, /COPILOT_PAT: \$\{\{ secrets\.COPILOT_GITHUB_TOKEN \}\}/);
+      assert.match(source, /COPILOT_PAT: \$\{\{ secrets\.COPILOT_PAT \}\}/);
     } else {
-      assert.match(source, /COPILOT_GITHUB_TOKEN: \$\{\{ secrets\.COPILOT_GITHUB_TOKEN \}\}/);
+      assert.match(source, /COPILOT_GITHUB_TOKEN: \$\{\{ secrets\.COPILOT_PAT \}\}/);
     }
   });
 }

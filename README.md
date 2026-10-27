@@ -76,7 +76,7 @@ npx wrangler deploy
 
 Use a fine-grained GitHub PAT with **Actions: Read & Write** access on `vibewatch/vibewatch.github.io`. `GITHUB_REPO` is stored as a non-sensitive Worker var in `cloudflare/wrangler.toml`. `GITHUB_REF` is optional, defaults to `main`, and can also be set as a Worker var if dispatches need to target another ref.
 
-The Worker always dispatches `model: gpt-6-luna`; model overrides are not supported. The GitHub workflows use the repository's `COPILOT_GITHUB_TOKEN` secret for Copilot authentication, plus `HARVESTER_PAT` and `WEBSITE_PAT` for repository access. These are separate from the Worker's `GITHUB_TOKEN` secret.
+The Worker always dispatches `model: gpt-6-luna`; model overrides are not supported. The report and translation workflows use the organization's `COPILOT_PAT` secret for Copilot authentication, exposed to the CLI and SDK as `COPILOT_GITHUB_TOKEN`, plus `HARVESTER_PAT` and `WEBSITE_PAT` for repository access. These are separate from the Worker's `GITHUB_TOKEN` secret.
 
 | Workflow | Daily time (UTC) |
 |----------|------------------|
