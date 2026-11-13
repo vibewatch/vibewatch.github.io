@@ -9,6 +9,7 @@ import {
   findMissingTranslations,
   isIdentityLink,
   localizeReaderFacingMetrics,
+  markdownSignature,
   normalizeProtectedTokenWrappers,
   normalizeThematicBreakTokens,
   parseArgs,
@@ -101,6 +102,45 @@ test("translation preserves heading and paragraph boundaries across trimmed chun
   const translation = await fs.readFile(file.translationPath, "utf8");
   assert.deepEqual(validateTranslation(source, translation), []);
   assert.match(translation, /译文\n## 译文\n\n译文 译文\.\n$/);
+});
+
+test("linked thumbnails preserve both destinations and translate their nested image labels", async (t) => {
+  const source = "# Video report\n\n[![A tutorial image](https://example.com/image.jpg)](https://example.com/watch?v=1)\n\nRead [the guide](https://example.com/guide).\n";
+  const { protectedMarkdown, protections } = protectMarkdown(source);
+  assert(!protectedMarkdown.includes("]("), protectedMarkdown);
+  assert.deepEqual(markdownSignature(source).urls, [
+    "https://example.com/guide",
+    "https://example.com/image.jpg",
+    "https://example.com/watch?v=1",
+  ]);
+  assert.deepEqual(markdownSignature(source).imageUrls, ["https://example.com/image.jpg"]);
+  assert.equal(restoreProtectedMarkdown(protectedMarkdown, protections), source);
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "linked-thumbnail-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const file = { sourcePath: path.join(root, "source.md"), translationPath: path.join(root, "source.zh.md") };
+  await fs.writeFile(file.sourcePath, source);
+  const client = {
+    async createSession() {
+      return {
+        async sendAndWait({ prompt }) {
+          if (prompt.startsWith("{")) {
+            const { labels } = JSON.parse(prompt);
+            assert(labels.every(({ text }) => !text.includes("VIBEWATCHPROTECTEDTOKEN")));
+            return { data: { content: JSON.stringify({
+              translations: labels.map(({ token }) => ({ token, translation: "教程" })),
+            }) } };
+          }
+          const chunk = prompt.match(/<source_markdown>\n([\s\S]*?)\n<\/source_markdown>/)[1];
+          return { data: { content: chunk.replace(/Video report|Read/g, "视频报告").trim() } };
+        },
+        async disconnect() {},
+      };
+    },
+  };
+  await translateFile(client, file, parseArgs([]));
+  const translation = await fs.readFile(file.translationPath, "utf8");
+  assert.deepEqual(validateTranslation(source, translation), []);
+  assert.match(translation, /\[!\[教程\]\(https:\/\/example.com\/image.jpg\)\]\(https:\/\/example.com\/watch\?v=1\)/);
 });
 
 for (const file of ["build-source-reports-reusable.yml", "translate-reports-to-chinese.yml"]) {

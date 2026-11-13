@@ -168,7 +168,14 @@ async function findMissingTranslations(
 }
 
 function markdownSignature(markdown) {
-  const links = parseMarkdownLinks(markdown);
+  const links = [];
+  const collectLinks = (text) => {
+    for (const link of parseMarkdownLinks(text)) {
+      links.push(link);
+      collectLinks(link.label);
+    }
+  };
+  collectLinks(markdown);
   return {
     headingLevels: [...markdown.matchAll(/^(#{1,6})\s/gm)].map((match) => match[1].length),
     urls: links.map((link) => link.destination).sort(),
@@ -190,8 +197,20 @@ function parseMarkdownLinks(markdown) {
 
   while ((match = linkStart.exec(markdown)) !== null) {
     const labelStart = match.index + match[0].length;
-    const separator = markdown.indexOf("](", labelStart);
-    if (separator === -1 || markdown.slice(labelStart, separator).includes("\n")) {
+    let labelDepth = 1;
+    let separator = labelStart;
+    for (; separator < markdown.length && labelDepth > 0; separator += 1) {
+      if (markdown[separator] === "\\") {
+        separator += 1;
+      } else if (markdown[separator] === "[") {
+        labelDepth += 1;
+      } else if (markdown[separator] === "]") {
+        labelDepth -= 1;
+      }
+    }
+    separator -= 1;
+    if (labelDepth !== 0 || markdown.slice(separator, separator + 2) !== "](" ||
+        markdown.slice(labelStart, separator).includes("\n")) {
       continue;
     }
 
@@ -369,7 +388,7 @@ function protectMarkdownLinks(markdown, protect) {
     result += protect({
       kind: "link",
       image: link.image,
-      label: link.label,
+      label: protectMarkdownLinks(link.label, protect),
       destination: link.destination,
     });
     cursor = link.end;
@@ -509,7 +528,8 @@ async function translateProtectedLabels(client, protections, modelConfig) {
       (protection) =>
         protection.kind === "link" &&
         protection.label.trim() &&
-        !isIdentityLink(protection.destination),
+        !isIdentityLink(protection.destination) &&
+        !/VIBEWATCHPROTECTEDTOKEN\d{6}/.test(protection.label),
     )
     .map((protection) => ({
       token: protection.token,
